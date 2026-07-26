@@ -82,6 +82,17 @@
             <Setter Property="CornerRadius" Value="8" />
             <Setter Property="FontSize" Value="13" />
         </Style>
+        <!-- tooltips: match the app (rounded dark card) instead of the default light popup -->
+        <Style Selector="ToolTip">
+            <Setter Property="Background" Value="{DynamicResource Card}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextHi}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Stroke}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="9,6" />
+            <Setter Property="FontSize" Value="12" />
+        </Style>
+
         <Style Selector="MenuFlyoutPresenter Separator">
             <Setter Property="Background" Value="{DynamicResource Stroke}" />
             <Setter Property="Margin" Value="4,5" />

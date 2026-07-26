@@ -82,7 +82,7 @@
   "Batch_ExportMixed": "Экспортировано: {0}; не удалось: {1}.",
 
   "Detail_UpdatedJustNow": "✓ обновлено только что",
-  "Detail_NoBans": "🛡 Нет банов",
+  "Detail_NoBans": "Нет банов",
   "Detail_TradeBanned": "Бан на обмен",
   "Detail_SignIn": "Войти",
   "Detail_ReSignIn": "Войти снова",

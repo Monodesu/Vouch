@@ -82,7 +82,7 @@
   "Batch_ExportMixed": "Exported {0}; {1} failed.",
 
   "Detail_UpdatedJustNow": "✓ updated just now",
-  "Detail_NoBans": "🛡 No bans",
+  "Detail_NoBans": "No bans",
   "Detail_TradeBanned": "Trade banned",
   "Detail_SignIn": "Sign in",
   "Detail_ReSignIn": "Re-Sign in",

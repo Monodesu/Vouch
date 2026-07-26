@@ -82,7 +82,7 @@
   "Batch_ExportMixed": "{0} 件をエクスポート、{1} 件が失敗。",
 
   "Detail_UpdatedJustNow": "✓ たった今更新",
-  "Detail_NoBans": "🛡 制限なし",
+  "Detail_NoBans": "制限なし",
   "Detail_TradeBanned": "トレード制限中",
   "Detail_SignIn": "サインイン",
   "Detail_ReSignIn": "再サインイン",

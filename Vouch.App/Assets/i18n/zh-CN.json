@@ -82,7 +82,7 @@
   "Batch_ExportMixed": "已导出 {0} 个；{1} 个失败。",
 
   "Detail_UpdatedJustNow": "✓ 刚刚更新",
-  "Detail_NoBans": "🛡 无封禁",
+  "Detail_NoBans": "无封禁",
   "Detail_TradeBanned": "交易封禁",
   "Detail_SignIn": "登录",
   "Detail_ReSignIn": "重新登录",

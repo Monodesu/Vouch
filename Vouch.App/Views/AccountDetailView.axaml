@@ -12,6 +12,12 @@
     </UserControl.Resources>
 
     <UserControl.Styles>
+        <!-- header icon buttons: quick tooltip that sits close under the button -->
+        <Style Selector="Button.acttip">
+            <Setter Property="ToolTip.ShowDelay" Value="150" />
+            <Setter Property="ToolTip.VerticalOffset" Value="-3" />
+        </Style>
+
         <!-- revocation card: tucked under the credentials card; slides down on hover (drawer peek) -->
         <Style Selector="Border.revcard">
             <Setter Property="RenderTransform" Value="translateY(0px)" />
@@ -77,7 +83,7 @@
                 </Ellipse>
             </Panel>
 
-            <StackPanel Grid.Column="1" Margin="14,0,0,0" VerticalAlignment="Center"
+            <StackPanel Grid.Column="1" Margin="14,0,0,0" VerticalAlignment="Center" ClipToBounds="True"
                         DataContext="{Binding SelectedAccount}">
                 <StackPanel Orientation="Horizontal" Spacing="8">
                     <TextBlock Text="{Binding PersonaName}" Foreground="{DynamicResource TextHi}"
@@ -95,8 +101,13 @@
                     <!-- clean -->
                     <Border IsVisible="{Binding IsClean}" Background="{DynamicResource ChipGoodBg}" CornerRadius="7"
                             Padding="7,2" VerticalAlignment="Center">
-                        <TextBlock Text="{loc:T Detail_NoBans}" Foreground="{DynamicResource Good}"
-                                   FontSize="11" FontWeight="SemiBold" />
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <Viewbox Width="12" Height="12" VerticalAlignment="Center">
+                                <Canvas Width="24" Height="24"><Path Data="{StaticResource Ico_Shield}" Fill="{DynamicResource Good}" /></Canvas>
+                            </Viewbox>
+                            <TextBlock Text="{loc:T Detail_NoBans}" Foreground="{DynamicResource Good}"
+                                       FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center" />
+                        </StackPanel>
                     </Border>
                     <!-- game bans -->
                     <Border IsVisible="{Binding HasGameBan}" Background="{DynamicResource ChipBadBg}" CornerRadius="7"
@@ -120,81 +131,52 @@
             </StackPanel>
 
             <!-- action buttons + status -->
-            <StackPanel Grid.Column="2" VerticalAlignment="Center" Spacing="5">
+            <StackPanel Grid.Column="2" VerticalAlignment="Center" Spacing="5" Margin="12,0,0,0">
                 <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Right">
-                    <Button Classes="pill" Padding="10,7" Command="{Binding OpenLoginCommand}"
+                    <Button Classes="pill acttip" Padding="9,7" Command="{Binding OpenLoginCommand}"
                             Background="{DynamicResource Card}" Foreground="{DynamicResource TextHi}"
-                            ToolTip.Tip="{loc:T Detail_SignInTip}">
-                        <StackPanel Orientation="Horizontal" Spacing="5">
-                            <Viewbox Width="15" Height="15">
-                                <Canvas Width="24" Height="24">
-                                    <Path Data="{StaticResource Ico_Key}" Fill="{DynamicResource TextHi}" />
-                                </Canvas>
-                            </Viewbox>
-                            <TextBlock Text="{Binding SignInLabel}" FontSize="11.5" />
-                        </StackPanel>
+                            ToolTip.Placement="Bottom" ToolTip.Tip="{Binding SignInLabel}">
+                        <Viewbox Width="15" Height="15">
+                            <Canvas Width="24" Height="24"><Path Data="{StaticResource Ico_Key}" Fill="{DynamicResource TextHi}" /></Canvas>
+                        </Viewbox>
                     </Button>
-                    <Button Classes="pill" Padding="10,7" Command="{Binding OpenProfileCommand}"
+                    <Button Classes="pill acttip" Padding="9,7" Command="{Binding OpenProfileCommand}"
                             Background="{DynamicResource Card}" Foreground="{DynamicResource TextHi}"
-                            ToolTip.Tip="{loc:T Detail_ProfileTip}">
-                        <StackPanel Orientation="Horizontal" Spacing="5">
-                            <Viewbox Width="15" Height="15">
-                                <Canvas Width="24" Height="24">
-                                    <Path Data="{StaticResource Ico_Web}" Fill="{DynamicResource TextHi}" />
-                                </Canvas>
-                            </Viewbox>
-                            <TextBlock Text="{loc:T Detail_Profile}" FontSize="11.5" />
-                        </StackPanel>
+                            ToolTip.Placement="Bottom" ToolTip.Tip="{loc:T Detail_Profile}">
+                        <Viewbox Width="15" Height="15">
+                            <Canvas Width="24" Height="24"><Path Data="{StaticResource Ico_Web}" Fill="{DynamicResource TextHi}" /></Canvas>
+                        </Viewbox>
                     </Button>
-                    <Button Classes="pill" Padding="10,7" Command="{Binding UpdateInfoCommand}"
+                    <Button Classes="pill acttip" Padding="9,7" Command="{Binding UpdateInfoCommand}"
                             Background="{DynamicResource Card}" Foreground="{DynamicResource TextHi}"
-                            ToolTip.Tip="{loc:T Detail_UpdateTip}">
+                            ToolTip.Placement="Bottom" ToolTip.Tip="{loc:T Detail_UpdateInfo}">
                         <Panel>
-                            <StackPanel Orientation="Horizontal" Spacing="5" IsVisible="{Binding !IsUpdatingInfo}">
-                                <Viewbox Width="16" Height="16">
-                                    <Canvas Width="24" Height="24">
-                                        <Path Data="{StaticResource Ico_Refresh}" Fill="{DynamicResource TextHi}" />
-                                    </Canvas>
-                                </Viewbox>
-                                <TextBlock Text="{loc:T Detail_UpdateInfo}" FontSize="11.5" />
-                            </StackPanel>
-                            <StackPanel Orientation="Horizontal" Spacing="5" IsVisible="{Binding IsUpdatingInfo}">
-                                <Viewbox Width="16" Height="16">
-                                    <Canvas Width="24" Height="24">
-                                        <Path Data="{StaticResource Ico_Refresh}" Fill="{DynamicResource Accent}" />
-                                    </Canvas>
-                                </Viewbox>
-                                <TextBlock Text="{loc:T Detail_Updating}" FontSize="11.5" Foreground="{DynamicResource Accent}" />
-                            </StackPanel>
+                            <Viewbox Width="16" Height="16" IsVisible="{Binding !IsUpdatingInfo}">
+                                <Canvas Width="24" Height="24"><Path Data="{StaticResource Ico_Refresh}" Fill="{DynamicResource TextHi}" /></Canvas>
+                            </Viewbox>
+                            <Viewbox Width="16" Height="16" IsVisible="{Binding IsUpdatingInfo}">
+                                <Canvas Width="24" Height="24"><Path Data="{StaticResource Ico_Refresh}" Fill="{DynamicResource Accent}" /></Canvas>
+                            </Viewbox>
                         </Panel>
                     </Button>
-                    <Button Classes="pill" Padding="10,7" Command="{Binding OpenTransferCommand}"
+                    <Button Classes="pill acttip" Padding="9,7" Command="{Binding OpenTransferCommand}"
                             Background="{DynamicResource Card}" Foreground="{DynamicResource TextHi}"
-                            ToolTip.Tip="{loc:T Detail_TransferTip}">
-                        <StackPanel Orientation="Horizontal" Spacing="5">
-                            <Viewbox Width="15" Height="15">
-                                <Canvas Width="24" Height="24">
-                                    <Path Data="{StaticResource Ico_Package}" Fill="{DynamicResource TextHi}" />
-                                </Canvas>
-                            </Viewbox>
-                            <TextBlock Text="{loc:T Detail_Transfer}" FontSize="11.5" />
-                        </StackPanel>
+                            ToolTip.Placement="Bottom" ToolTip.Tip="{loc:T Detail_Transfer}">
+                        <Viewbox Width="15" Height="15">
+                            <Canvas Width="24" Height="24"><Path Data="{StaticResource Ico_Package}" Fill="{DynamicResource TextHi}" /></Canvas>
+                        </Viewbox>
                     </Button>
-                    <Button Classes="pill" Padding="10,7"
+                    <Button Classes="pill acttip" Padding="9,7"
                             Background="{DynamicResource Card}" Foreground="{DynamicResource TextHi}"
-                            ToolTip.Tip="{loc:T Qr_Scan}">
+                            ToolTip.Placement="Bottom" ToolTip.Tip="{loc:T Qr_Scan}">
                         <Button.Flyout>
                             <MenuFlyout Placement="BottomEdgeAlignedRight" FlyoutPresenterClasses="qrdrop">
                                 <MenuItem Header="{loc:T Qr_FromClipboard}" Command="{Binding ScanQrClipboardCommand}" />
                                 <MenuItem Header="{loc:T Qr_FromScreen}" Command="{Binding ScanQrScreenCommand}" />
                             </MenuFlyout>
                         </Button.Flyout>
-                        <StackPanel Orientation="Horizontal" Spacing="5">
-                            <!-- vector QR glyph (a font emoji re-renders/shrinks on first hover) -->
-                            <Path Fill="{DynamicResource TextHi}" Width="12" Height="12" VerticalAlignment="Center"
-                                  Data="M0,0 H5 V5 H0 Z M7,0 H12 V5 H7 Z M0,7 H5 V12 H0 Z M7,7 H9 V9 H7 Z M10,10 H12 V12 H10 Z" />
-                            <TextBlock Text="{loc:T Qr_Scan}" FontSize="11.5" VerticalAlignment="Center" />
-                        </StackPanel>
+                        <Path Fill="{DynamicResource TextHi}" Width="12" Height="12" VerticalAlignment="Center"
+                              Data="M0,0 H5 V5 H0 Z M7,0 H12 V5 H7 Z M0,7 H5 V12 H0 Z M7,7 H9 V9 H7 Z M10,10 H12 V12 H10 Z" />
                     </Button>
                 </StackPanel>
                 <TextBlock Text="{Binding UpdateStatus}" Foreground="{DynamicResource Bad}" FontSize="11"

@@ -117,6 +117,9 @@ public partial class MainViewModel : ViewModelBase
         SelectedAccount = Accounts.Count > 0 ? Accounts[0] : null;
         SyncEncryptionToggle();
         LoadSettings();
+        // Loc-derived VM properties (e.g. SignInLabel) are computed, not {loc:T} bindings, so re-fetch
+        // them all when the language changes.
+        Loc.I.LanguageChanged += (_, _) => OnPropertyChanged(string.Empty);
         _ = SteamTime.EnsureAlignedAsync(); // codes follow Steam's clock once this lands
         Confirmations.CollectionChanged += (_, _) => OnPropertyChanged(nameof(IsEmpty));
         Accounts.CollectionChanged += (_, _) => OnPropertyChanged(nameof(AccountsLabel));

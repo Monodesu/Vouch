@@ -9,7 +9,7 @@
         mc:Ignorable="d" d:DesignWidth="960" d:DesignHeight="640"
         x:Class="Vouch.App.Views.MainWindow"
         x:DataType="vm:MainViewModel"
-        Width="1060" Height="720" MinWidth="900" MinHeight="640"
+        Width="1060" Height="720" MinWidth="940" MinHeight="640"
         Icon="/Assets/vouch.ico"
         Title="Vouch"
         ExtendClientAreaToDecorationsHint="True"
