@@ -1,0 +1,82 @@
+Vouch — a cross-platform Steam authenticator
+Copyright (C) 2026 mono
+
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU Affero General Public License, version 3, as published by
+the Free Software Foundation. See the LICENSE file for the full text. This
+program is distributed WITHOUT ANY WARRANTY.
+
+--------------------------------------------------------------------------------
+
+This project is a derivative work of "Steam Desktop Authenticator" by
+Jesse Cardone (https://github.com/Jessecar96/SteamDesktopAuthenticator),
+originally released under the MIT License. As required by that license, the
+original copyright and permission notice is retained below:
+
+    The MIT License (MIT)
+
+    Copyright (c) 2015 Jesse Cardone
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy
+    of this software and associated documentation files (the "Software"), to deal
+    in the Software without restriction, including without limitation the rights
+    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    copies of the Software, and to permit persons to whom the Software is
+    furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in all
+    copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+    SOFTWARE.
+
+--------------------------------------------------------------------------------
+
+Vouch's Steam authenticator core — the TOTP code generator, the .maFile /
+SteamGuardAccount format, the authenticator linking flow, and the mobile
+confirmation (mobileconf) flow — is a native C# port of "SteamAuth" by
+Joshua Coffey / geel9 (https://github.com/geel9/SteamAuth), the library the
+original Steam Desktop Authenticator was built on. SteamAuth is released under
+the MIT License, whose copyright and permission notice is retained below:
+
+    The MIT License (MIT)
+
+    Copyright (c) 2015 Joshua Coffey
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy
+    of this software and associated documentation files (the "Software"), to deal
+    in the Software without restriction, including without limitation the rights
+    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    copies of the Software, and to permit persons to whom the Software is
+    furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in all
+    copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+    SOFTWARE.
+
+--------------------------------------------------------------------------------
+
+This program uses the following third-party libraries at runtime, each under its
+own license:
+
+    Avalonia, Avalonia.Themes.Fluent, Avalonia.Fonts.Inter   — MIT License
+    CommunityToolkit.Mvvm                                     — MIT License
+    Konscious.Security.Cryptography.Argon2                    — MIT License
+    SteamKit2 (https://github.com/SteamRE/SteamKit)           — LGPL-2.1 License
+
+SteamKit2 is an independent, community-maintained library (the SteamRE project);
+it is not affiliated with or endorsed by Valve Corporation. It is used as an
+unmodified NuGet dependency; its source and license are available at the URL
+above.

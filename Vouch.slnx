@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="Vouch.Core.Tests/Vouch.Core.Tests.csproj" />
+  <Project Path="Vouch.Core/Vouch.Core.csproj" />
+  <Project Path="Vouch.App/Vouch.App.csproj" />
+</Solution>

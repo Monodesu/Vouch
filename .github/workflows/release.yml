@@ -1,0 +1,92 @@
+name: Release
+
+# Fires only when a version tag is pushed (e.g. v0.1.0): runs tests, builds a
+# framework-dependent single-file binary for each platform, and publishes them
+# to a GitHub Release for that tag.
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write   # needed to create the release + upload assets
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - run: dotnet test Vouch.Core.Tests/Vouch.Core.Tests.csproj -c Release
+
+  build:
+    needs: test
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            rid: win-x64
+            suffix: .exe
+          - os: ubuntu-latest
+            rid: linux-x64
+            suffix: ''
+          - os: macos-latest
+            rid: osx-arm64
+            suffix: ''
+          - os: macos-latest
+            rid: osx-x64
+            suffix: ''
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      # Framework-dependent single file: needs the matching .NET 10 Desktop
+      # Runtime on the user's machine. (Set --self-contained true for no-runtime.)
+      - name: Publish (${{ matrix.rid }})
+        run: >
+          dotnet publish Vouch.App/Vouch.App.csproj -c Release -r ${{ matrix.rid }}
+          --self-contained false -p:PublishSingleFile=true
+          -p:IncludeNativeLibrariesForSelfExtract=true -o publish
+
+      - name: Package
+        shell: bash
+        run: |
+          rm -f publish/*.pdb
+          mkdir -p dist
+          mv "publish/Vouch${{ matrix.suffix }}" "dist/Vouch-${{ github.ref_name }}-${{ matrix.rid }}${{ matrix.suffix }}"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vouch-${{ matrix.rid }}
+          path: dist/*
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
+          generate_release_notes: true
+          body: |
+            Framework-dependent single-file builds. Each needs the matching
+            **.NET 10 Desktop Runtime** installed:
+
+            - **Windows** — `Vouch-*-win-x64.exe`, just run it.
+            - **Linux** — `Vouch-*-linux-x64`, `chmod +x` then run.
+            - **macOS** — `Vouch-*-osx-arm64` (Apple Silicon) / `Vouch-*-osx-x64` (Intel).
+              Unsigned: `chmod +x`, then remove quarantine with
+              `xattr -dr com.apple.quarantine ./Vouch-*` before first launch.
+
+            ⚠️ Only trust binaries from this official repository.

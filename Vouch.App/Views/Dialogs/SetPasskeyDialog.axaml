@@ -1,0 +1,48 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Vouch.App.ViewModels"
+             xmlns:loc="using:Vouch.App.Localization"
+             x:Class="Vouch.App.Views.Dialogs.SetPasskeyDialog"
+             x:DataType="vm:MainViewModel">
+
+    <Border Classes="dialog" Width="440" IsVisible="{Binding ShowSetPasskey}"
+            MaxHeight="{Binding $parent[Panel].Bounds.Height, Converter={StaticResource Subtract}, ConverterParameter=72}">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Spacing="16" Margin="0,0,8,0">
+            <Grid ColumnDefinitions="*,Auto">
+                <StackPanel>
+                    <TextBlock Classes="dlgTitle" Text="{loc:T Passkey_Title}" />
+                    <TextBlock Text="{loc:T Passkey_Sub}"
+                               Foreground="{DynamicResource TextLo}" FontSize="12" TextWrapping="Wrap" />
+                </StackPanel>
+                <Button Grid.Column="1" Content="✕" Background="Transparent" VerticalAlignment="Top"
+                        Foreground="{DynamicResource TextLo}" Command="{Binding CancelSetPasskeyCommand}" />
+            </Grid>
+
+            <StackPanel Spacing="6">
+                <TextBlock Classes="dlgLabel" Text="{loc:T Common_PasskeyLabel}" />
+                <TextBox Text="{Binding SetPasskey}" PasswordChar="•" PlaceholderText="{loc:T Common_PasskeyPh}" />
+            </StackPanel>
+            <StackPanel Spacing="6">
+                <TextBlock Classes="dlgLabel" Text="{loc:T Passkey_ConfirmLabel}" />
+                <TextBox Text="{Binding SetPasskeyConfirm}" PasswordChar="•" PlaceholderText="{loc:T Passkey_ConfirmPh}" />
+            </StackPanel>
+
+            <Border Background="{DynamicResource WarnBg}" CornerRadius="8" Padding="12,10">
+                <TextBlock Foreground="{DynamicResource WarnText}" FontSize="12" TextWrapping="Wrap"
+                           Text="{loc:T Passkey_Warn}" />
+            </Border>
+
+            <TextBlock Text="{Binding SetPasskeyStatus}" Foreground="{DynamicResource TextHi}" FontSize="12"
+                       TextWrapping="Wrap"
+                       IsVisible="{Binding SetPasskeyStatus, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+
+            <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+                <Button Classes="ghost" Content="{loc:T Common_Cancel}" Command="{Binding CancelSetPasskeyCommand}" />
+                <Button Classes="primary" Content="{loc:T Passkey_Button}" IsDefault="True"
+                        Command="{Binding ConfirmSetPasskeyCommand}" />
+            </StackPanel>
+        </StackPanel>
+        </ScrollViewer>
+    </Border>
+</UserControl>

@@ -1,0 +1,164 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Vouch.App.App"
+             xmlns:local="using:Vouch.App"
+             xmlns:conv="using:Vouch.App.Converters"
+             RequestedThemeVariant="Default">
+             <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
+
+    <Application.DataTemplates>
+        <local:ViewLocator />
+    </Application.DataTemplates>
+
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="avares://Vouch/Themes/Palette.axaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <conv:SubtractConverter x:Key="Subtract" />
+        </ResourceDictionary>
+    </Application.Resources>
+
+    <Application.Styles>
+        <FluentTheme />
+
+        <!-- Restyle MenuFlyout (the "Add account" menu) to match the app: rounded dark card,
+             soft shadow, and a short fade+slide-up on open. -->
+        <Style Selector="MenuFlyoutPresenter">
+            <Setter Property="Background" Value="{DynamicResource Card}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Stroke}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="12" />
+            <Setter Property="Padding" Value="8" />
+            <Setter Property="MinWidth" Value="230" />
+            <Setter Property="RenderTransform">
+                <TranslateTransform />
+            </Setter>
+            <Style.Animations>
+                <Animation Duration="0:0:0.15" Easing="CubicEaseOut" FillMode="Forward">
+                    <KeyFrame Cue="0%">
+                        <Setter Property="Opacity" Value="0" />
+                        <Setter Property="TranslateTransform.Y" Value="10" />
+                    </KeyFrame>
+                    <KeyFrame Cue="100%">
+                        <Setter Property="Opacity" Value="1" />
+                        <Setter Property="TranslateTransform.Y" Value="0" />
+                    </KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+        <Style Selector="MenuFlyoutPresenter MenuItem">
+            <Setter Property="Foreground" Value="{DynamicResource TextHi}" />
+            <Setter Property="Padding" Value="10,11" />
+            <Setter Property="Margin" Value="4,2" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="FontSize" Value="13" />
+        </Style>
+        <Style Selector="MenuFlyoutPresenter Separator">
+            <Setter Property="Background" Value="{DynamicResource Stroke}" />
+            <Setter Property="Margin" Value="4,5" />
+            <Setter Property="Opacity" Value="0.6" />
+        </Style>
+
+        <!-- Dialog overlays: fade the scrim and pop the dialog in on open. Driven by a data-bound
+             `.open` class so the transition replays each time (IsVisible toggling alone won't). -->
+        <Style Selector="Border.scrim">
+            <Setter Property="Opacity" Value="0" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.14" Easing="CubicEaseOut" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Border.scrim.open">
+            <Setter Property="Opacity" Value="1" />
+        </Style>
+        <Style Selector="Panel.dialogHost">
+            <Setter Property="RenderTransformOrigin" Value="50%,50%" />
+            <Setter Property="RenderTransform" Value="scale(0.96)" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.16" Easing="CubicEaseOut" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Panel.dialogHost.open">
+            <Setter Property="RenderTransform" Value="scale(1)" />
+        </Style>
+
+        <!-- toast: eases in/out (fade + slide up) instead of popping. `.show` = visible. -->
+        <Style Selector="Border.toast">
+            <Setter Property="Opacity" Value="0" />
+            <Setter Property="RenderTransform" Value="translateY(16px)" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.22" Easing="CubicEaseOut" />
+                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.22" Easing="CubicEaseOut" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Border.toast.show">
+            <Setter Property="Opacity" Value="1" />
+            <Setter Property="RenderTransform" Value="translateY(0)" />
+        </Style>
+
+        <!-- slim, rounded scrollbars (replaces the chunky default); fixed width so hover doesn't fatten it -->
+        <Style Selector="ScrollBar">
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+        <Style Selector="ScrollBar:vertical">
+            <Setter Property="Width" Value="8" />
+            <Setter Property="MinWidth" Value="8" />
+            <Setter Property="MaxWidth" Value="8" />
+            <Setter Property="Margin" Value="2,4,2,4" />
+        </Style>
+        <Style Selector="ScrollBar:horizontal">
+            <Setter Property="Height" Value="8" />
+            <Setter Property="MinHeight" Value="8" />
+            <Setter Property="MaxHeight" Value="8" />
+            <Setter Property="Margin" Value="4,2,4,2" />
+        </Style>
+        <Style Selector="ScrollBar /template/ Thumb">
+            <Setter Property="Background" Value="#3AFFFFFF" />
+            <Setter Property="CornerRadius" Value="4" />
+        </Style>
+        <!-- keep the thumb at full width in both collapsed and expanded states -->
+        <Style Selector="ScrollBar:vertical /template/ Thumb">
+            <Setter Property="Width" Value="8" />
+            <Setter Property="MinWidth" Value="8" />
+            <Setter Property="MinHeight" Value="28" />
+        </Style>
+        <Style Selector="ScrollBar:horizontal /template/ Thumb">
+            <Setter Property="Height" Value="8" />
+            <Setter Property="MinHeight" Value="8" />
+            <Setter Property="MinWidth" Value="28" />
+        </Style>
+        <Style Selector="ScrollBar /template/ Thumb:pointerover">
+            <Setter Property="Background" Value="#66FFFFFF" />
+        </Style>
+        <Style Selector="ScrollBar /template/ Thumb:pressed">
+            <Setter Property="Background" Value="#88FFFFFF" />
+        </Style>
+        <!-- drop the up/down (or left/right) line buttons so the track is just the thumb -->
+        <Style Selector="ScrollBar /template/ RepeatButton">
+            <Setter Property="IsVisible" Value="False" />
+            <Setter Property="Width" Value="0" />
+            <Setter Property="Height" Value="0" />
+        </Style>
+    </Application.Styles>
+
+    <TrayIcon.Icons>
+        <TrayIcons>
+            <TrayIcon Icon="/Assets/vouch.ico" ToolTipText="Vouch"
+                      Clicked="TrayIcon_Clicked">
+                <TrayIcon.Menu>
+                    <NativeMenu>
+                        <NativeMenuItem Header="Show Vouch" Click="TrayShow_Click" />
+                        <NativeMenuItemSeparator />
+                        <NativeMenuItem Header="Exit" Click="TrayExit_Click" />
+                    </NativeMenu>
+                </TrayIcon.Menu>
+            </TrayIcon>
+        </TrayIcons>
+    </TrayIcon.Icons>
+</Application>

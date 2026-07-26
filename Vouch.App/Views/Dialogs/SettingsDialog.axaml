@@ -1,0 +1,139 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Vouch.App.ViewModels"
+             xmlns:loc="using:Vouch.App.Localization"
+             x:Class="Vouch.App.Views.Dialogs.SettingsDialog"
+             x:DataType="vm:MainViewModel">
+
+    <UserControl.Resources>
+        <loc:ThemeLabelConverter x:Key="ThemeLabel" />
+    </UserControl.Resources>
+
+    <Border Classes="dialog" Width="460" IsVisible="{Binding ShowSettings}"
+            MaxHeight="{Binding $parent[Panel].Bounds.Height, Converter={StaticResource Subtract}, ConverterParameter=72}">
+        <Grid RowDefinitions="Auto,*">
+            <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,16">
+                <TextBlock Classes="dlgTitle" Text="{loc:T Settings_Title}" VerticalAlignment="Center" />
+                <Button Grid.Column="1" Content="✕" Background="Transparent"
+                        Foreground="{DynamicResource TextLo}" Command="{Binding CloseDialogsCommand}" />
+            </Grid>
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <StackPanel Spacing="16" Margin="0,0,18,0">
+
+            <Grid ColumnDefinitions="*,12,*">
+                <StackPanel Grid.Column="0" Spacing="6">
+                    <TextBlock Classes="dlgLabel" Text="{loc:T Settings_Theme}" />
+                    <ComboBox ItemsSource="{Binding ThemeOptions}" SelectedItem="{Binding Theme}"
+                              HorizontalAlignment="Stretch">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock>
+                                    <TextBlock.Text>
+                                        <MultiBinding Converter="{StaticResource ThemeLabel}">
+                                            <Binding />
+                                            <Binding Path="Language" Source="{x:Static loc:Loc.I}" />
+                                        </MultiBinding>
+                                    </TextBlock.Text>
+                                </TextBlock>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                </StackPanel>
+                <StackPanel Grid.Column="2" Spacing="6">
+                    <TextBlock Classes="dlgLabel" Text="{loc:T Settings_Language}" />
+                    <ComboBox ItemsSource="{Binding LanguageOptions}" SelectedItem="{Binding LanguageOption}"
+                              HorizontalAlignment="Stretch" />
+                </StackPanel>
+            </Grid>
+
+            <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="6">
+                <TextBlock Grid.Row="0" Text="{loc:T Settings_MinimizeToTray}" Foreground="{DynamicResource TextHi}" VerticalAlignment="Center" />
+                <ToggleSwitch Grid.Row="0" Grid.Column="1" IsChecked="{Binding MinimizeToTray}" HorizontalAlignment="Right" />
+
+                <TextBlock Grid.Row="1" Text="{loc:T Settings_StartMinimized}" Foreground="{DynamicResource TextHi}" VerticalAlignment="Center" />
+                <ToggleSwitch Grid.Row="1" Grid.Column="1" IsChecked="{Binding StartMinimized}" HorizontalAlignment="Right" />
+
+                <TextBlock Grid.Row="2" Text="{loc:T Settings_StartOnBoot}" Foreground="{DynamicResource TextHi}"
+                           VerticalAlignment="Center" IsVisible="{Binding AutostartSupported}" />
+                <ToggleSwitch Grid.Row="2" Grid.Column="1" IsChecked="{Binding StartOnBoot}"
+                              HorizontalAlignment="Right" IsVisible="{Binding AutostartSupported}" />
+
+                <TextBlock Grid.Row="3" Text="{loc:T Settings_Encrypt}" Foreground="{DynamicResource TextHi}" VerticalAlignment="Center" />
+                <ToggleSwitch Grid.Row="3" Grid.Column="1" IsChecked="{Binding EncryptionEnabled}" HorizontalAlignment="Right" />
+
+                <TextBlock Grid.Row="4" Text="{loc:T Settings_AutoCheck}" Foreground="{DynamicResource TextHi}" VerticalAlignment="Center" />
+                <ToggleSwitch Grid.Row="4" Grid.Column="1" IsChecked="{Binding PeriodicChecking}" HorizontalAlignment="Right" />
+
+                <TextBlock Grid.Row="5" Text="{loc:T Settings_NotifyOnNew}" Foreground="{DynamicResource TextHi}" VerticalAlignment="Center" />
+                <ToggleSwitch Grid.Row="5" Grid.Column="1" IsChecked="{Binding NotifyOnNew}" HorizontalAlignment="Right" />
+            </Grid>
+
+            <Grid ColumnDefinitions="*,12,*" IsVisible="{Binding PeriodicChecking}">
+                <StackPanel Grid.Column="0" Spacing="6">
+                    <TextBlock Classes="dlgLabel" Text="{loc:T Settings_SelectedInterval}" />
+                    <NumericUpDown Value="{Binding PeriodicIntervalSeconds}" Minimum="10" Maximum="3600"
+                                   Increment="5" HorizontalAlignment="Stretch" />
+                </StackPanel>
+                <StackPanel Grid.Column="2" Spacing="6">
+                    <TextBlock Classes="dlgLabel" Text="{loc:T Settings_SweepInterval}" />
+                    <NumericUpDown Value="{Binding SweepIntervalSeconds}" Minimum="60" Maximum="3600"
+                                   Increment="30" HorizontalAlignment="Stretch" />
+                </StackPanel>
+            </Grid>
+
+            <StackPanel Spacing="6">
+                <TextBlock Classes="dlgLabel" Text="{loc:T Settings_ClipboardClear}" />
+                <NumericUpDown Value="{Binding ClipboardClearSeconds}" Minimum="0" Maximum="120"
+                               Increment="5" HorizontalAlignment="Stretch" />
+            </StackPanel>
+
+            <StackPanel Spacing="6">
+                <Grid ColumnDefinitions="Auto,*">
+                    <TextBlock Grid.Column="0" Classes="dlgLabel" Text="{loc:T Settings_ApiKey}" VerticalAlignment="Center" />
+                    <Button Grid.Column="1" Classes="rowlink" HorizontalAlignment="Left" Margin="10,0,0,0"
+                            Command="{Binding OpenLinkCommand}" CommandParameter="https://steamcommunity.com/dev/apikey">
+                        <TextBlock Text="{loc:T Settings_GetApiKey}" Foreground="{DynamicResource Accent}" FontSize="11" />
+                    </Button>
+                </Grid>
+                <TextBox Text="{Binding ApiKey}" PasswordChar="•"
+                         PlaceholderText="steamcommunity.com/dev/apikey" />
+            </StackPanel>
+
+            <StackPanel Spacing="6">
+                <Grid ColumnDefinitions="Auto,*">
+                    <TextBlock Grid.Column="0" Classes="dlgLabel" Text="{loc:T Settings_TradeUrl}" VerticalAlignment="Center" />
+                    <Button Grid.Column="1" Classes="rowlink" HorizontalAlignment="Left" Margin="10,0,0,0"
+                            Command="{Binding OpenLinkCommand}" CommandParameter="https://steamcommunity.com/my/tradeoffers/privacy">
+                        <TextBlock Text="{loc:T Settings_GetTradeUrl}" Foreground="{DynamicResource Accent}" FontSize="11" />
+                    </Button>
+                </Grid>
+                <TextBox Text="{Binding TradeUrl}"
+                         PlaceholderText="steamcommunity.com/tradeoffer/new/?partner=…&amp;token=…" />
+            </StackPanel>
+
+            <!-- version + update check -->
+            <StackPanel Spacing="6">
+                <TextBlock Classes="dlgLabel" Text="{loc:T Settings_Version}" />
+                <Grid ColumnDefinitions="*,Auto">
+                    <StackPanel Grid.Column="0" VerticalAlignment="Center" Spacing="2">
+                        <TextBlock Text="{Binding AppVersion, StringFormat='v{0}'}"
+                                   Foreground="{DynamicResource TextHi}" FontSize="14" />
+                        <TextBlock Text="{Binding UpdateCheckStatus}" FontSize="11.5" TextWrapping="Wrap"
+                                   Foreground="{DynamicResource TextLo}"
+                                   IsVisible="{Binding UpdateCheckStatus, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                        <Button Classes="ghost" Content="{loc:T Update_ViewRelease}" IsVisible="{Binding UpdateAvailable}"
+                                Command="{Binding OpenReleaseCommand}" />
+                        <Button Classes="ghost" Content="{loc:T Update_Check}" Command="{Binding CheckForUpdatesCommand}" />
+                    </StackPanel>
+                </Grid>
+            </StackPanel>
+
+                    <Button Classes="primary" Content="{loc:T Common_Done}" HorizontalAlignment="Right"
+                            Command="{Binding CloseDialogsCommand}" />
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+    </Border>
+</UserControl>

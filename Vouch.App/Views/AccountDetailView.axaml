@@ -1,0 +1,463 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Vouch.App.ViewModels"
+             xmlns:m="using:Vouch.App.Models"
+             xmlns:loc="using:Vouch.App.Localization"
+             x:Class="Vouch.App.Views.AccountDetailView"
+             x:DataType="vm:MainViewModel">
+
+    <Grid RowDefinitions="Auto,Auto,Auto,*" Margin="28,22,28,20">
+
+        <!-- header -->
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto">
+
+            <!-- avatar: colored initials until fetched, real image after -->
+            <Panel Grid.Column="0" Width="46" Height="46" DataContext="{Binding SelectedAccount}">
+                <Border CornerRadius="23" Background="{Binding AvatarBrush}"
+                        IsVisible="{Binding !HasAvatar}">
+                    <TextBlock Text="{Binding Initials}" Foreground="{DynamicResource OnAccent}" FontWeight="Bold"
+                               FontSize="17" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Border>
+                <Ellipse Width="46" Height="46" IsVisible="{Binding HasAvatar}">
+                    <Ellipse.Fill>
+                        <ImageBrush Source="{Binding Avatar}" Stretch="UniformToFill" />
+                    </Ellipse.Fill>
+                </Ellipse>
+            </Panel>
+
+            <StackPanel Grid.Column="1" Margin="14,0,0,0" VerticalAlignment="Center"
+                        DataContext="{Binding SelectedAccount}">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <TextBlock Text="{Binding PersonaName}" Foreground="{DynamicResource TextHi}"
+                               FontSize="19" FontWeight="SemiBold" VerticalAlignment="Center" />
+                    <Border IsVisible="{Binding InfoUpdated}" Background="{DynamicResource ChipUpdatedBg}" CornerRadius="8"
+                            Padding="7,2" VerticalAlignment="Center">
+                        <TextBlock Text="{loc:T Detail_UpdatedJustNow}" Foreground="{DynamicResource Good}"
+                                   FontSize="10.5" FontWeight="SemiBold" />
+                    </Border>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,3,0,0">
+                    <TextBlock Text="{Binding SteamId}" Foreground="{DynamicResource TextLo}"
+                               FontSize="12" VerticalAlignment="Center" />
+
+                    <!-- clean -->
+                    <Border IsVisible="{Binding IsClean}" Background="{DynamicResource ChipGoodBg}" CornerRadius="7"
+                            Padding="7,2" VerticalAlignment="Center">
+                        <TextBlock Text="{loc:T Detail_NoBans}" Foreground="{DynamicResource Good}"
+                                   FontSize="11" FontWeight="SemiBold" />
+                    </Border>
+                    <!-- game bans -->
+                    <Border IsVisible="{Binding HasGameBan}" Background="{DynamicResource ChipBadBg}" CornerRadius="7"
+                            Padding="7,2" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding GameBanText}" Foreground="{DynamicResource Bad}"
+                                   FontSize="11" FontWeight="SemiBold" />
+                    </Border>
+                    <!-- VAC bans -->
+                    <Border IsVisible="{Binding HasVacBan}" Background="{DynamicResource ChipBadBg}" CornerRadius="7"
+                            Padding="7,2" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding VacBanText}" Foreground="{DynamicResource Bad}"
+                                   FontSize="11" FontWeight="SemiBold" />
+                    </Border>
+                    <!-- trade ban -->
+                    <Border IsVisible="{Binding TradeBanned}" Background="{DynamicResource ChipBadBg}" CornerRadius="7"
+                            Padding="7,2" VerticalAlignment="Center">
+                        <TextBlock Text="{loc:T Detail_TradeBanned}" Foreground="{DynamicResource Bad}"
+                                   FontSize="11" FontWeight="SemiBold" />
+                    </Border>
+                </StackPanel>
+            </StackPanel>
+
+            <!-- action buttons + status -->
+            <StackPanel Grid.Column="2" VerticalAlignment="Center" Spacing="5">
+                <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Right">
+                    <Button Classes="pill" Padding="10,7" Command="{Binding OpenLoginCommand}"
+                            Background="{DynamicResource Card}" Foreground="{DynamicResource TextHi}"
+                            ToolTip.Tip="{loc:T Detail_SignInTip}">
+                        <StackPanel Orientation="Horizontal" Spacing="5">
+                            <TextBlock Text="🔑" FontSize="12" />
+                            <TextBlock Text="{Binding SignInLabel}" FontSize="11.5" />
+                        </StackPanel>
+                    </Button>
+                    <Button Classes="pill" Padding="10,7" Command="{Binding OpenProfileCommand}"
+                            Background="{DynamicResource Card}" Foreground="{DynamicResource TextHi}"
+                            ToolTip.Tip="{loc:T Detail_ProfileTip}">
+                        <StackPanel Orientation="Horizontal" Spacing="5">
+                            <TextBlock Text="🌐" FontSize="12" />
+                            <TextBlock Text="{loc:T Detail_Profile}" FontSize="11.5" />
+                        </StackPanel>
+                    </Button>
+                    <Button Classes="pill" Padding="10,7" Command="{Binding UpdateInfoCommand}"
+                            Background="{DynamicResource Card}" Foreground="{DynamicResource TextHi}"
+                            ToolTip.Tip="{loc:T Detail_UpdateTip}">
+                        <Panel>
+                            <StackPanel Orientation="Horizontal" Spacing="5" IsVisible="{Binding !IsUpdatingInfo}">
+                                <TextBlock Text="⟳" FontSize="13" />
+                                <TextBlock Text="{loc:T Detail_UpdateInfo}" FontSize="11.5" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Spacing="5" IsVisible="{Binding IsUpdatingInfo}">
+                                <TextBlock Text="⟳" FontSize="13" Foreground="{DynamicResource Accent}" />
+                                <TextBlock Text="{loc:T Detail_Updating}" FontSize="11.5" Foreground="{DynamicResource Accent}" />
+                            </StackPanel>
+                        </Panel>
+                    </Button>
+                    <Button Classes="pill" Padding="10,7" Command="{Binding OpenTransferCommand}"
+                            Background="{DynamicResource Card}" Foreground="{DynamicResource TextHi}"
+                            ToolTip.Tip="{loc:T Detail_TransferTip}">
+                        <StackPanel Orientation="Horizontal" Spacing="5">
+                            <TextBlock Text="📦" FontSize="12" />
+                            <TextBlock Text="{loc:T Detail_Transfer}" FontSize="11.5" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+                <TextBlock Text="{Binding UpdateStatus}" Foreground="{DynamicResource Bad}" FontSize="11"
+                           HorizontalAlignment="Right" TextWrapping="Wrap" MaxWidth="280"
+                           IsVisible="{Binding UpdateStatus, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+            </StackPanel>
+        </Grid>
+
+        <!-- code card -->
+        <Border Grid.Row="1" Margin="0,20,0,0" Background="{DynamicResource Card}"
+                CornerRadius="16" Padding="26,22">
+            <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                    <TextBlock Text="{loc:T Detail_LoginCode}" Foreground="{DynamicResource TextLo}"
+                               FontSize="11" FontWeight="Bold" />
+                    <TextBlock Text="{Binding CurrentCode}" Foreground="{DynamicResource TextHi}"
+                               FontFamily="Cascadia Mono,Consolas,monospace"
+                               FontSize="52" FontWeight="Bold" Margin="0,4,0,0" />
+                    <Button Command="{Binding CopyCodeCommand}" Classes="pill"
+                            Margin="0,12,0,0" HorizontalAlignment="Left"
+                            Background="{DynamicResource CardHi}" Foreground="{DynamicResource TextHi}">
+                        <Panel>
+                            <StackPanel Orientation="Horizontal" Spacing="8"
+                                        IsVisible="{Binding !CodeCopied}">
+                                <TextBlock Text="⧉" FontSize="14" />
+                                <TextBlock Text="{loc:T Detail_CopyCode}" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Spacing="8"
+                                        IsVisible="{Binding CodeCopied}">
+                                <TextBlock Text="✓" FontSize="14" Foreground="{DynamicResource Good}" />
+                                <TextBlock Text="{loc:T Common_Copied}" Foreground="{DynamicResource Good}" />
+                            </StackPanel>
+                        </Panel>
+                    </Button>
+                </StackPanel>
+
+                <!-- countdown ring -->
+                <Panel Grid.Column="1" Width="112" Height="112" VerticalAlignment="Center">
+                    <Ellipse Width="112" Height="112" Stroke="{DynamicResource RingTrack}" StrokeThickness="9" />
+                    <Arc Width="112" Height="112" Stroke="{DynamicResource Accent}" StrokeThickness="9"
+                         StartAngle="-90" SweepAngle="{Binding RingSweep}" StrokeLineCap="Round" />
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <TextBlock Text="{Binding SecondsRemaining}" Foreground="{DynamicResource TextHi}"
+                                   FontSize="30" FontWeight="Bold" HorizontalAlignment="Center" />
+                        <TextBlock Text="{loc:T Detail_Seconds}" Foreground="{DynamicResource TextLo}"
+                                   FontSize="10" HorizontalAlignment="Center" />
+                    </StackPanel>
+                </Panel>
+            </Grid>
+        </Border>
+
+        <!-- credentials card -->
+        <Border Grid.Row="2" Margin="0,14,0,0" Background="{DynamicResource Card}"
+                CornerRadius="16" Padding="22,16">
+            <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="90,*,Auto">
+                <!-- username row -->
+                <TextBlock Grid.Row="0" Grid.Column="0" Text="{loc:T Detail_Username}" VerticalAlignment="Center"
+                           Foreground="{DynamicResource TextLo}" FontSize="11" FontWeight="Bold" />
+                <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Username}" VerticalAlignment="Center"
+                           Foreground="{DynamicResource TextHi}" FontSize="15"
+                           FontFamily="Cascadia Mono,Consolas,monospace" />
+                <Button Grid.Row="0" Grid.Column="2" Classes="pill" Command="{Binding CopyUsernameCommand}"
+                        Background="{DynamicResource CardHi}" Foreground="{DynamicResource TextHi}"
+                        Padding="10,5" Margin="0,0,0,4" HorizontalAlignment="Right">
+                    <Panel>
+                        <StackPanel Orientation="Horizontal" Spacing="6" IsVisible="{Binding !UserCopied}">
+                            <TextBlock Text="⧉" FontSize="13" />
+                            <TextBlock Text="{loc:T Common_Copy}" FontSize="12.5" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Spacing="6" IsVisible="{Binding UserCopied}">
+                            <TextBlock Text="✓" FontSize="13" Foreground="{DynamicResource Good}" />
+                            <TextBlock Text="{loc:T Common_Copied}" FontSize="12.5" Foreground="{DynamicResource Good}" />
+                        </StackPanel>
+                    </Panel>
+                </Button>
+
+                <!-- password row -->
+                <TextBlock Grid.Row="1" Grid.Column="0" Text="{loc:T Detail_Password}" VerticalAlignment="Center" Margin="0,8,0,0"
+                           Foreground="{DynamicResource TextLo}" FontSize="11" FontWeight="Bold" />
+                <Panel Grid.Row="1" Grid.Column="1" Margin="0,8,0,0" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding DisplayPassword}" VerticalAlignment="Center"
+                               IsVisible="{Binding !IsEditingPassword}"
+                               Foreground="{DynamicResource TextHi}" FontSize="15"
+                               FontFamily="Cascadia Mono,Consolas,monospace" />
+                    <TextBox Text="{Binding PasswordEdit}" IsVisible="{Binding IsEditingPassword}"
+                             FontFamily="Cascadia Mono,Consolas,monospace" FontSize="14" Padding="8,4"
+                             PlaceholderText="{loc:T Detail_PasswordPh}">
+                        <TextBox.KeyBindings>
+                            <KeyBinding Gesture="Enter" Command="{Binding SavePasswordCommand}" />
+                            <KeyBinding Gesture="Escape" Command="{Binding CancelEditPasswordCommand}" />
+                        </TextBox.KeyBindings>
+                    </TextBox>
+                </Panel>
+                <StackPanel Grid.Row="1" Grid.Column="2" Orientation="Horizontal" Spacing="8"
+                            Margin="0,8,0,0" VerticalAlignment="Center">
+                    <!-- view mode: reveal / copy / edit -->
+                    <StackPanel Orientation="Horizontal" Spacing="8" IsVisible="{Binding !IsEditingPassword}">
+                        <Button Classes="pill" Command="{Binding TogglePasswordCommand}"
+                                Background="{DynamicResource CardHi}" Foreground="{DynamicResource TextLo}"
+                                Padding="10,5" ToolTip.Tip="{loc:T Detail_ShowHide}">
+                            <Panel>
+                                <TextBlock Text="👁" FontSize="13" IsVisible="{Binding !PasswordRevealed}" />
+                                <TextBlock Text="🙈" FontSize="13" IsVisible="{Binding PasswordRevealed}" />
+                            </Panel>
+                        </Button>
+                        <Button Classes="pill" Command="{Binding CopyPasswordCommand}"
+                                Background="{DynamicResource CardHi}" Foreground="{DynamicResource TextHi}"
+                                Padding="10,5">
+                            <Panel>
+                                <StackPanel Orientation="Horizontal" Spacing="6" IsVisible="{Binding !PassCopied}">
+                                    <TextBlock Text="⧉" FontSize="13" />
+                                    <TextBlock Text="{loc:T Common_Copy}" FontSize="12.5" />
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Spacing="6" IsVisible="{Binding PassCopied}">
+                                    <TextBlock Text="✓" FontSize="13" Foreground="{DynamicResource Good}" />
+                                    <TextBlock Text="{loc:T Common_Copied}" FontSize="12.5" Foreground="{DynamicResource Good}" />
+                                </StackPanel>
+                            </Panel>
+                        </Button>
+                        <Button Classes="pill" Command="{Binding BeginEditPasswordCommand}"
+                                Background="{DynamicResource CardHi}" Foreground="{DynamicResource TextLo}"
+                                Padding="10,5" ToolTip.Tip="{loc:T Detail_EditPassword}">
+                            <TextBlock Text="✎" FontSize="13" />
+                        </Button>
+                    </StackPanel>
+                    <!-- edit mode: save / cancel -->
+                    <StackPanel Orientation="Horizontal" Spacing="8" IsVisible="{Binding IsEditingPassword}">
+                        <Button Classes="pill" Command="{Binding SavePasswordCommand}"
+                                Background="{DynamicResource Accent}" Foreground="{DynamicResource OnAccent}"
+                                Padding="10,5" ToolTip.Tip="{loc:T Common_Save}">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <TextBlock Text="✓" FontSize="13" />
+                                <TextBlock Text="{loc:T Common_Save}" FontSize="12.5" />
+                            </StackPanel>
+                        </Button>
+                        <Button Classes="pill" Command="{Binding CancelEditPasswordCommand}"
+                                Background="{DynamicResource CardHi}" Foreground="{DynamicResource TextLo}"
+                                Padding="10,5" ToolTip.Tip="{loc:T Common_Cancel}">
+                            <TextBlock Text="✕" FontSize="13" />
+                        </Button>
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- tabs: confirmations / trade offers / notifications -->
+        <Grid Grid.Row="3" RowDefinitions="Auto,*" Margin="0,20,0,0">
+
+            <!-- tab bar + context refresh -->
+            <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="2,0,0,12">
+                <StackPanel Orientation="Horizontal" Spacing="18">
+                    <Button Classes="tab" Classes.active="{Binding IsConfTab}"
+                            Command="{Binding SelectTabCommand}" CommandParameter="0">
+                        <StackPanel Orientation="Horizontal" Spacing="7">
+                            <TextBlock Text="{loc:T Confirm_Title}" />
+                            <Border Background="{DynamicResource CardHi}" CornerRadius="9" Padding="7,1" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding Confirmations.Count}" Foreground="{DynamicResource Accent}"
+                                           FontSize="11" FontWeight="Bold" />
+                            </Border>
+                        </StackPanel>
+                    </Button>
+                    <Button Classes="tab" Classes.active="{Binding IsOffersTab}"
+                            Command="{Binding SelectTabCommand}" CommandParameter="1">
+                        <StackPanel Orientation="Horizontal" Spacing="7">
+                            <TextBlock Text="{loc:T Offers_Title}" />
+                            <Border Background="{DynamicResource CardHi}" CornerRadius="9" Padding="7,1" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding OffersCount}" Foreground="{DynamicResource Accent}"
+                                           FontSize="11" FontWeight="Bold" />
+                            </Border>
+                        </StackPanel>
+                    </Button>
+                    <Button Classes="tab" Classes.active="{Binding IsNotifTab}"
+                            Command="{Binding SelectTabCommand}" CommandParameter="2">
+                        <StackPanel Orientation="Horizontal" Spacing="7">
+                            <TextBlock Text="{loc:T Notif_Title}" />
+                            <Border Background="{DynamicResource Accent}" CornerRadius="9" Padding="7,1" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding Notifications.Count}" Foreground="{DynamicResource OnAccent}"
+                                           FontSize="11" FontWeight="Bold" />
+                            </Border>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+
+                <Button Grid.Column="1" Classes="pill" Padding="10,5" ToolTip.Tip="{loc:T Confirm_RefreshTip}"
+                        Background="{DynamicResource Card}" Foreground="{DynamicResource TextHi}"
+                        IsVisible="{Binding IsConfTab}" Command="{Binding RefreshConfirmationsCommand}">
+                    <StackPanel Orientation="Horizontal" Spacing="7">
+                        <TextBlock Text="⟳" FontSize="13" />
+                        <TextBlock Text="{loc:T Confirm_Refresh}" FontSize="12" IsVisible="{Binding !ConfirmationsBusy}" />
+                        <TextBlock Text="{loc:T Confirm_LoadingShort}" FontSize="12" Foreground="{DynamicResource Accent}"
+                                   IsVisible="{Binding ConfirmationsBusy}" />
+                    </StackPanel>
+                </Button>
+                <Button Grid.Column="1" Classes="pill" Padding="10,5"
+                        Background="{DynamicResource Card}" Foreground="{DynamicResource TextHi}"
+                        IsVisible="{Binding IsOffersTab}" Command="{Binding RefreshOffersCommand}">
+                    <StackPanel Orientation="Horizontal" Spacing="7">
+                        <TextBlock Text="⟳" FontSize="13" />
+                        <TextBlock Text="{loc:T Confirm_Refresh}" FontSize="12" IsVisible="{Binding !OffersBusy}" />
+                        <TextBlock Text="{loc:T Confirm_LoadingShort}" FontSize="12" Foreground="{DynamicResource Accent}"
+                                   IsVisible="{Binding OffersBusy}" />
+                    </StackPanel>
+                </Button>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8"
+                            IsVisible="{Binding IsNotifTab}" HorizontalAlignment="Right">
+                    <Button Classes="pill" Padding="10,5"
+                            Background="{DynamicResource Card}" Foreground="{DynamicResource TextHi}"
+                            Command="{Binding MarkAllNotificationsReadCommand}"
+                            IsVisible="{Binding NotificationsUnread}">
+                        <StackPanel Orientation="Horizontal" Spacing="7">
+                            <TextBlock Text="✓" FontSize="13" />
+                            <TextBlock Text="{loc:T Notif_MarkAllRead}" FontSize="12" />
+                        </StackPanel>
+                    </Button>
+                    <Button Classes="pill" Padding="10,5"
+                            Background="{DynamicResource Card}" Foreground="{DynamicResource TextHi}"
+                            Command="{Binding RefreshNotificationsCommand}">
+                        <StackPanel Orientation="Horizontal" Spacing="7">
+                            <TextBlock Text="⟳" FontSize="13" />
+                            <TextBlock Text="{loc:T Confirm_Refresh}" FontSize="12" IsVisible="{Binding !NotificationsBusy}" />
+                            <TextBlock Text="{loc:T Confirm_LoadingShort}" FontSize="12" Foreground="{DynamicResource Accent}"
+                                       IsVisible="{Binding NotificationsBusy}" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Grid>
+
+            <!-- tab content -->
+            <Panel Grid.Row="1">
+
+                <!-- CONFIRMATIONS -->
+                <Grid IsVisible="{Binding IsConfTab}" RowDefinitions="Auto,*">
+                    <Border Grid.Row="0" Background="{DynamicResource CardHi}" CornerRadius="8" Padding="12,8" Margin="0,0,0,10"
+                            IsVisible="{Binding ConfirmationsStatus, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                        <TextBlock Text="{Binding ConfirmationsStatus}" Foreground="{DynamicResource TextLo}"
+                                   FontSize="12" TextWrapping="Wrap" />
+                    </Border>
+                    <ScrollViewer Grid.Row="1">
+                        <ItemsControl ItemsSource="{Binding Confirmations}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="m:ConfirmationItem">
+                                    <Border Background="{DynamicResource Card}" CornerRadius="12" Padding="16,12" Margin="0,0,0,10">
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <!-- login rows open a detail dialog on click; other kinds are inert (IsEnabled=false) -->
+                                            <Button Grid.Column="0" Classes="rowlink" IsEnabled="{Binding IsLogin}"
+                                                    Command="{Binding $parent[ItemsControl].((vm:MainViewModel)DataContext).OpenLoginDetailCommand}"
+                                                    CommandParameter="{Binding}">
+                                                <Grid ColumnDefinitions="Auto,*">
+                                                    <Border Grid.Column="0" Width="40" Height="40" CornerRadius="10" Background="{DynamicResource CardHi}">
+                                                        <TextBlock Text="{Binding Glyph}" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                    </Border>
+                                                    <StackPanel Grid.Column="1" Margin="14,0" VerticalAlignment="Center">
+                                                        <TextBlock Text="{Binding Title}" Foreground="{DynamicResource TextHi}" FontSize="13.5" FontWeight="Medium" TextTrimming="CharacterEllipsis" />
+                                                        <TextBlock Text="{Binding Subtitle}" Foreground="{DynamicResource TextLo}" FontSize="12" TextTrimming="CharacterEllipsis" />
+                                                        <TextBlock Text="{Binding When}" Foreground="{DynamicResource AccentDim}" FontSize="10.5" Margin="0,2,0,0" IsVisible="{Binding !IsLogin}" />
+                                                    </StackPanel>
+                                                </Grid>
+                                            </Button>
+                                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center" Margin="10,0,0,0">
+                                                <Button Classes="pill accept" Content="{loc:T Confirm_Accept}"
+                                                        Command="{Binding $parent[ItemsControl].((vm:MainViewModel)DataContext).AcceptCommand}"
+                                                        CommandParameter="{Binding}" />
+                                                <Button Classes="pill deny" Content="{loc:T Confirm_Deny}"
+                                                        Command="{Binding $parent[ItemsControl].((vm:MainViewModel)DataContext).DenyCommand}"
+                                                        CommandParameter="{Binding}" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                    <StackPanel Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center" IsVisible="{Binding IsEmpty}" Spacing="6">
+                        <TextBlock Text="✓" FontSize="34" Foreground="{DynamicResource AccentDim}" HorizontalAlignment="Center" />
+                        <TextBlock Text="{loc:T Confirm_Empty}" Foreground="{DynamicResource TextLo}" FontSize="13" HorizontalAlignment="Center" />
+                    </StackPanel>
+                </Grid>
+
+                <!-- TRADE OFFERS -->
+                <Grid IsVisible="{Binding IsOffersTab}" RowDefinitions="Auto,*">
+                    <Border Grid.Row="0" Background="{DynamicResource CardHi}" CornerRadius="8" Padding="12,8" Margin="0,0,0,10"
+                            IsVisible="{Binding OffersStatus, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                        <TextBlock Text="{Binding OffersStatus}" Foreground="{DynamicResource TextLo}" FontSize="12" TextWrapping="Wrap" />
+                    </Border>
+                    <ScrollViewer Grid.Row="1">
+                        <ItemsControl ItemsSource="{Binding TradeOffers}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:OfferItem">
+                                    <Border Background="{DynamicResource Card}" CornerRadius="12" Padding="16,12" Margin="0,0,0,10">
+                                        <Grid ColumnDefinitions="Auto,*,Auto">
+                                            <Border Grid.Column="0" Width="40" Height="40" CornerRadius="10" Background="{DynamicResource CardHi}">
+                                                <TextBlock Text="⇄" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            </Border>
+                                            <Button Grid.Column="1" Classes="rowlink" Margin="14,0" VerticalAlignment="Center"
+                                                    ToolTip.Tip="{loc:T Offers_ExpandTip}"
+                                                    Command="{Binding $parent[ItemsControl].((vm:MainViewModel)DataContext).OpenOfferDetailsCommand}"
+                                                    CommandParameter="{Binding}">
+                                                <StackPanel>
+                                                    <TextBlock Text="{Binding Direction}" Foreground="{DynamicResource TextHi}" FontSize="13.5" FontWeight="Medium" />
+                                                    <TextBlock Text="{Binding Summary}" Foreground="{DynamicResource TextLo}" FontSize="12" />
+                                                    <TextBlock Text="{Binding Message}" Foreground="{DynamicResource AccentDim}" FontSize="10.5"
+                                                               IsVisible="{Binding HasMessage}" TextTrimming="CharacterEllipsis" MaxWidth="320" />
+                                                </StackPanel>
+                                            </Button>
+                                            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                                <Button Classes="pill accept" Content="{loc:T Confirm_Accept}" IsVisible="{Binding IsIncoming}"
+                                                        Command="{Binding $parent[ItemsControl].((vm:MainViewModel)DataContext).AcceptOfferCommand}"
+                                                        CommandParameter="{Binding}" />
+                                                <Button Classes="pill deny" Content="{Binding DeclineLabel}"
+                                                        Command="{Binding $parent[ItemsControl].((vm:MainViewModel)DataContext).DeclineOfferCommand}"
+                                                        CommandParameter="{Binding}" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Grid>
+
+                <!-- NOTIFICATIONS -->
+                <Grid IsVisible="{Binding IsNotifTab}" RowDefinitions="Auto,*">
+                    <Border Grid.Row="0" Background="{DynamicResource CardHi}" CornerRadius="8" Padding="12,8" Margin="0,0,0,10"
+                            IsVisible="{Binding NotificationsStatus, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                        <TextBlock Text="{Binding NotificationsStatus}" Foreground="{DynamicResource TextLo}" FontSize="12" TextWrapping="Wrap" />
+                    </Border>
+                    <ScrollViewer Grid.Row="1">
+                        <ItemsControl ItemsSource="{Binding Notifications}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:NotificationItem">
+                                    <Border Background="{DynamicResource Card}" CornerRadius="10" Padding="14,10" Margin="0,0,0,8">
+                                        <Grid ColumnDefinitions="Auto,*,Auto">
+                                            <Ellipse Grid.Column="0" Width="8" Height="8" VerticalAlignment="Center"
+                                                     Fill="{DynamicResource Accent}" IsVisible="{Binding Unread}" />
+                                            <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding TypeName}" Foreground="{DynamicResource TextHi}" FontSize="13" />
+                                                <TextBlock Text="{Binding When}" Foreground="{DynamicResource TextLo}" FontSize="11" />
+                                            </StackPanel>
+                                            <Button Grid.Column="2" Classes="pill" Padding="10,5" VerticalAlignment="Center"
+                                                    Background="{DynamicResource CardHi}" Foreground="{DynamicResource TextLo}"
+                                                    IsVisible="{Binding Unread}" Content="{loc:T Notif_MarkRead}"
+                                                    Command="{Binding $parent[ItemsControl].((vm:MainViewModel)DataContext).MarkNotificationReadCommand}"
+                                                    CommandParameter="{Binding}" />
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Grid>
+            </Panel>
+        </Grid>
+    </Grid>
+</UserControl>

@@ -1,0 +1,8 @@
+# Line endings: LF in the repo AND in the working tree (no CRLF conversion,
+# so Git stops warning on every add). Cross-platform .NET/Avalonia repo.
+* text=auto eol=lf
+
+# Binary assets — never touch their bytes.
+*.png binary
+*.ico binary
+*.maFile binary

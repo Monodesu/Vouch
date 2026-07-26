@@ -1,0 +1,401 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Vouch.App.ViewModels"
+        xmlns:views="using:Vouch.App.Views"
+        xmlns:dialogs="using:Vouch.App.Views.Dialogs"
+        xmlns:loc="using:Vouch.App.Localization"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="960" d:DesignHeight="640"
+        x:Class="Vouch.App.Views.MainWindow"
+        x:DataType="vm:MainViewModel"
+        Width="1060" Height="720" MinWidth="900" MinHeight="640"
+        Icon="/Assets/vouch.ico"
+        Title="Vouch"
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaTitleBarHeightHint="0">
+
+    <Design.DataContext>
+        <vm:MainViewModel />
+    </Design.DataContext>
+
+    <!-- Empty drawn-decorations theme: kills v12's managed chrome (its zero-height
+         overlay still leaks fixed-size caption buttons) — we draw our own title bar. -->
+    <Window.WindowDecorationsTheme>
+        <ControlTheme TargetType="WindowDrawnDecorations">
+            <Setter Property="DefaultTitleBarHeight" Value="0" />
+            <Setter Property="DefaultFrameThickness" Value="0" />
+            <Setter Property="DefaultShadowThickness" Value="0" />
+            <Setter Property="Template">
+                <WindowDrawnDecorationsTemplate>
+                    <WindowDrawnDecorationsContent />
+                </WindowDrawnDecorationsTemplate>
+            </Setter>
+        </ControlTheme>
+    </Window.WindowDecorationsTheme>
+
+    <!-- Shared styles — cascade into every view/dialog below. -->
+    <Window.Styles>
+        <!-- Account list item -->
+        <Style Selector="ListBoxItem">
+            <Setter Property="Padding" Value="10,8" />
+            <Setter Property="Margin" Value="6,2" />
+            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+        <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource Card}" />
+            <Setter Property="CornerRadius" Value="10" />
+        </Style>
+        <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource CardHi}" />
+            <Setter Property="CornerRadius" Value="10" />
+        </Style>
+
+        <Style Selector="Button.pill">
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="14,8" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+
+        <!-- detail tab headers (Confirmations / Trade offers / Notifications) -->
+        <Style Selector="Button.tab">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="{DynamicResource TextLo}" />
+            <Setter Property="Padding" Value="2,4" />
+            <Setter Property="FontSize" Value="14.5" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+        <Style Selector="Button.tab.active">
+            <Setter Property="Foreground" Value="{DynamicResource TextHi}" />
+        </Style>
+        <Style Selector="Button.tab:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+        <!-- a whole row that acts as a link (e.g. open a trade offer on Steam) -->
+        <Style Selector="Button.rowlink">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+        </Style>
+        <Style Selector="Button.rowlink /template/ ContentPresenter">
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+        <!-- when used as an inert row wrapper (IsEnabled=false), don't fade or show a hand -->
+        <Style Selector="Button.rowlink:disabled">
+            <Setter Property="Opacity" Value="1" />
+            <Setter Property="Cursor" Value="Arrow" />
+        </Style>
+        <Style Selector="Button.rowlink:disabled /template/ ContentPresenter">
+            <Setter Property="Opacity" Value="1" />
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+        <Style Selector="Button.accept">
+            <Setter Property="Background" Value="{DynamicResource AcceptBg}" />
+            <Setter Property="Foreground" Value="White" />
+        </Style>
+        <Style Selector="Button.accept:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource AcceptHoverBg}" />
+        </Style>
+        <Style Selector="Button.deny">
+            <Setter Property="Background" Value="{DynamicResource DenyBg}" />
+            <Setter Property="Foreground" Value="{DynamicResource DenyFg}" />
+        </Style>
+        <Style Selector="Button.deny:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource DenyHoverBg}" />
+        </Style>
+
+        <!-- dialog card + fields -->
+        <Style Selector="Border.dialog">
+            <Setter Property="Background" Value="{DynamicResource DialogBg}" />
+            <Setter Property="CornerRadius" Value="16" />
+            <Setter Property="Padding" Value="24" />
+            <Setter Property="BorderBrush" Value="{DynamicResource DialogBorder}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="BoxShadow" Value="0 24 60 0 #99000000" />
+        </Style>
+        <Style Selector="Border.dialog TextBox">
+            <Setter Property="Background" Value="{DynamicResource InputBg}" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="BorderBrush" Value="{DynamicResource DialogBorder}" />
+        </Style>
+
+        <!-- ComboBox: rounded to match the inputs (colors come from ComboBox* palette keys) -->
+        <Style Selector="Border.dialog ComboBox">
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="11,7" />
+            <Setter Property="MinHeight" Value="0" />
+        </Style>
+
+        <!-- NumericUpDown: a rounded dark field with flat, subtle spinner buttons.
+             The visible field is the inner ButtonSpinner; the NumericUpDown itself is bare. -->
+        <Style Selector="Border.dialog NumericUpDown">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+        </Style>
+        <Style Selector="Border.dialog NumericUpDown ButtonSpinner">
+            <Setter Property="Background" Value="{DynamicResource InputBg}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource DialogBorder}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="8" />
+        </Style>
+        <!-- inner text field: fully transparent, no border in any state (kills the focus outline) -->
+        <Style Selector="Border.dialog NumericUpDown TextBox">
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+        <Style Selector="Border.dialog NumericUpDown TextBox /template/ Border#PART_BorderElement">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+        </Style>
+        <!-- spinner up/down buttons: flat, themed chevrons with a soft rounded hover -->
+        <Style Selector="Border.dialog NumericUpDown RepeatButton">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Foreground" Value="{DynamicResource TextLo}" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Width" Value="30" />
+        </Style>
+        <Style Selector="Border.dialog NumericUpDown RepeatButton /template/ ContentPresenter">
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Margin" Value="3" />
+        </Style>
+        <Style Selector="Border.dialog NumericUpDown RepeatButton:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource CardHi}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextHi}" />
+        </Style>
+        <Style Selector="TextBlock.dlgTitle">
+            <Setter Property="Foreground" Value="{DynamicResource TextHi}" />
+            <Setter Property="FontSize" Value="17" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+        <Style Selector="TextBlock.dlgLabel">
+            <Setter Property="Foreground" Value="{DynamicResource TextLo}" />
+            <Setter Property="FontSize" Value="11.5" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="Margin" Value="2,0,0,4" />
+        </Style>
+        <Style Selector="Button.primary">
+            <Setter Property="Background" Value="{DynamicResource Accent}" />
+            <Setter Property="Foreground" Value="{DynamicResource OnAccent}" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="16,9" />
+        </Style>
+        <Style Selector="Button.ghost">
+            <Setter Property="Background" Value="{DynamicResource CardHi}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextHi}" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="16,9" />
+        </Style>
+
+        <!-- custom title-bar caption buttons -->
+        <Style Selector="Button.caption">
+            <Setter Property="Width" Value="44" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="{DynamicResource TextLo}" />
+            <Setter Property="CornerRadius" Value="0" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="VerticalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="FontSize" Value="13" />
+        </Style>
+        <Style Selector="Button.caption:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource CardHi}" />
+        </Style>
+        <Style Selector="Button.caption:pointerover">
+            <Setter Property="Foreground" Value="{DynamicResource TextHi}" />
+        </Style>
+        <Style Selector="Button.caption.close:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#C42B1C" />
+        </Style>
+        <Style Selector="Button.caption.close:pointerover">
+            <Setter Property="Foreground" Value="White" />
+        </Style>
+    </Window.Styles>
+
+    <Grid RowDefinitions="36,*" Background="{DynamicResource Bg0}"
+          Margin="{Binding $parent[Window].OffScreenMargin}">
+
+        <!-- ===== custom title bar: one continuous draggable strip ===== -->
+        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Background="{DynamicResource Bg1}"
+              PointerPressed="TitleBar_PointerPressed">
+            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8"
+                        Margin="14,0" VerticalAlignment="Center" IsHitTestVisible="False">
+                <Border Width="18" Height="18" CornerRadius="5" Background="{DynamicResource Accent}">
+                    <TextBlock Text="V" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource OnAccent}"
+                               HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Border>
+                <TextBlock Text="{loc:T App_Name}" FontSize="12"
+                           Foreground="{DynamicResource TextLo}" VerticalAlignment="Center" />
+            </StackPanel>
+            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                <Button Classes="caption" Content="–" Click="Minimize_Click" ToolTip.Tip="{loc:T Title_Minimize}" />
+                <Button Classes="caption" Click="MaximizeRestore_Click" ToolTip.Tip="{loc:T Title_Maximize}">
+                    <TextBlock x:Name="MaxGlyph" Text="▢" FontSize="11" />
+                </Button>
+                <!-- U+00D7 multiplication sign: a plain-text ×, immune to emoji-font hijacking -->
+                <Button Classes="caption close" Content="×" FontSize="17" Click="CloseButton_Click" ToolTip.Tip="{loc:T Title_Close}" />
+            </StackPanel>
+        </Grid>
+
+        <Grid Grid.Row="1" ColumnDefinitions="272,*">
+
+        <views:SidebarView Grid.Column="0" />
+
+        <!-- empty state (no accounts) -->
+        <StackPanel Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center"
+                    Spacing="8" IsVisible="{Binding !HasSelection}">
+            <TextBlock Text="🛡" FontSize="46" HorizontalAlignment="Center" />
+            <TextBlock Text="{loc:T Empty_Title}" FontSize="20" FontWeight="SemiBold"
+                       Foreground="{DynamicResource TextHi}" HorizontalAlignment="Center" />
+            <TextBlock Text="{loc:T Empty_Sub}"
+                       Foreground="{DynamicResource TextLo}" FontSize="13" HorizontalAlignment="Center" />
+            <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center" Margin="0,12,0,0">
+                <Button Classes="primary" Content="{loc:T Empty_Setup}" Command="{Binding OpenWizardCommand}" />
+                <Button Classes="ghost" Content="{loc:T Empty_Import}" Command="{Binding OpenImportCommand}" />
+            </StackPanel>
+        </StackPanel>
+
+        <views:AccountDetailView Grid.Column="1" IsVisible="{Binding HasSelection}" />
+        </Grid>
+
+        <!-- dialog overlay: each dialog toggles itself via its ShowX binding -->
+        <Border Grid.Row="0" Grid.RowSpan="2" Classes="scrim" Classes.open="{Binding AnyDialogOpen}"
+                IsVisible="{Binding AnyDialogOpen}" Background="{DynamicResource Scrim}">
+            <Panel Classes="dialogHost" Classes.open="{Binding AnyDialogOpen}">
+                <dialogs:SettingsDialog />
+                <dialogs:WizardDialog />
+                <dialogs:ImportDialog />
+                <dialogs:ExportDialog />
+                <dialogs:RemoveDialog />
+                <dialogs:LoginDialog />
+                <dialogs:SetPasskeyDialog />
+                <dialogs:TransferDialog />
+                <dialogs:OfferDetailsDialog />
+                <dialogs:LoginDetailDialog />
+                <dialogs:EmailCodeDialog />
+                <dialogs:FinalizeDialog />
+                <dialogs:DeactivateDialog />
+                <dialogs:GroupPickerDialog />
+
+                <!-- batch remove confirm -->
+                <Border Classes="dialog" Width="440" IsVisible="{Binding ShowBatchRemove}"
+                        MaxHeight="{Binding $parent[Panel].Bounds.Height, Converter={StaticResource Subtract}, ConverterParameter=72}">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <StackPanel Spacing="16" Margin="0,0,8,0">
+                        <TextBlock Classes="dlgTitle" Text="{loc:T Batch_RemoveTitle}" />
+                        <TextBlock Foreground="{DynamicResource TextLo}" FontSize="13" TextWrapping="Wrap"
+                                   Text="{Binding BatchRemoveSubText}" />
+                        <Border Background="{DynamicResource WarnBg}" CornerRadius="8" Padding="12,10">
+                            <TextBlock Foreground="{DynamicResource WarnText}" FontSize="12" TextWrapping="Wrap"
+                                       Text="{loc:T Batch_RemoveWarn}" />
+                        </Border>
+                        <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+                            <Button Classes="ghost" Content="{loc:T Common_Cancel}" Command="{Binding CloseDialogsCommand}" />
+                            <Button Classes="primary" Background="{DynamicResource Bad}" Foreground="White"
+                                    Content="{Binding BatchRemoveButtonText}" Command="{Binding ConfirmBatchRemoveCommand}" />
+                        </StackPanel>
+                    </StackPanel>
+                    </ScrollViewer>
+                </Border>
+            </Panel>
+        </Border>
+
+        <!-- unlock overlay: sits above everything and can't be dismissed without the passkey -->
+        <Border Grid.Row="0" Grid.RowSpan="2" Classes="scrim" Classes.open="{Binding ShowUnlock}"
+                IsVisible="{Binding ShowUnlock}" Background="{DynamicResource Scrim}">
+            <Border Classes="dialog" Width="400"
+                    MaxHeight="{Binding $parent[Panel].Bounds.Height, Converter={StaticResource Subtract}, ConverterParameter=72}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <StackPanel Spacing="16">
+                    <StackPanel Spacing="4">
+                        <TextBlock Classes="dlgTitle" Text="{loc:T Unlock_Title}" />
+                        <TextBlock Text="{loc:T Unlock_Sub}"
+                                   Foreground="{DynamicResource TextLo}" FontSize="12" TextWrapping="Wrap" />
+                    </StackPanel>
+                    <StackPanel Spacing="6">
+                        <TextBlock Classes="dlgLabel" Text="{loc:T Common_PasskeyLabel}" />
+                        <TextBox Text="{Binding UnlockPasskey}" PasswordChar="•" PlaceholderText="{loc:T Common_PasskeyPh}" />
+                    </StackPanel>
+                    <TextBlock Text="{Binding UnlockStatus}" Foreground="{DynamicResource Bad}" FontSize="12"
+                               TextWrapping="Wrap"
+                               IsVisible="{Binding UnlockStatus, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                    <Button Classes="primary" Content="{loc:T Unlock_Button}" IsDefault="True" HorizontalAlignment="Right"
+                            Command="{Binding UnlockCommand}" />
+                </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Border>
+
+        <!-- first-run language chooser: above everything, shown once before setup -->
+        <Border Grid.Row="0" Grid.RowSpan="2" Classes="scrim" Classes.open="{Binding ShowLanguagePicker}"
+                IsVisible="{Binding ShowLanguagePicker}" Background="{DynamicResource Scrim}">
+            <Border Classes="dialog" Width="300" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <StackPanel Spacing="10">
+                    <TextBlock Classes="dlgTitle" Text="Language · 语言 · Язык · 言語"
+                               HorizontalAlignment="Center" FontSize="15" />
+                    <Button Classes="pill" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                            Background="{DynamicResource CardHi}" Foreground="{DynamicResource TextHi}"
+                            Content="English" Command="{Binding PickLanguageCommand}" CommandParameter="en" />
+                    <Button Classes="pill" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                            Background="{DynamicResource CardHi}" Foreground="{DynamicResource TextHi}"
+                            Content="中文" Command="{Binding PickLanguageCommand}" CommandParameter="zh-CN" />
+                    <Button Classes="pill" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                            Background="{DynamicResource CardHi}" Foreground="{DynamicResource TextHi}"
+                            Content="Русский" Command="{Binding PickLanguageCommand}" CommandParameter="ru" />
+                    <Button Classes="pill" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                            Background="{DynamicResource CardHi}" Foreground="{DynamicResource TextHi}"
+                            Content="日本語" Command="{Binding PickLanguageCommand}" CommandParameter="ja" />
+                </StackPanel>
+            </Border>
+        </Border>
+
+        <!-- toast: transient success/error feedback, above everything; auto-hides after a few seconds.
+             Classes.show drives a fade + slide via the Border.toast styles so it eases in and out. -->
+        <Border Grid.Row="0" Grid.RowSpan="2" Classes="toast" Classes.show="{Binding ToastVisible}"
+                IsHitTestVisible="{Binding ToastVisible}"
+                PointerEntered="Toast_PointerEntered" PointerExited="Toast_PointerExited"
+                HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,24,24"
+                MaxWidth="380" CornerRadius="10" Padding="16,12"
+                Background="{DynamicResource Card}" BorderThickness="1" BorderBrush="{DynamicResource CardHi}"
+                BoxShadow="0 8 24 0 #40000000">
+            <Grid RowDefinitions="Auto,Auto">
+                <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="11" VerticalAlignment="Center">
+                    <TextBlock Text="✓" FontSize="15" VerticalAlignment="Center"
+                               Foreground="{DynamicResource Good}" IsVisible="{Binding !ToastIsError}" />
+                    <TextBlock Text="✕" FontSize="15" VerticalAlignment="Center"
+                               Foreground="{DynamicResource Bad}" IsVisible="{Binding ToastIsError}" />
+                    <TextBlock Text="{Binding ToastMessage}" TextWrapping="Wrap" VerticalAlignment="Center"
+                               Foreground="{DynamicResource TextHi}" FontSize="13" MaxWidth="290" />
+                    <Button Command="{Binding DismissToastCommand}" Content="✕" FontSize="12" Padding="6,2"
+                            Background="Transparent" Foreground="{DynamicResource TextLo}" VerticalAlignment="Center" />
+                </StackPanel>
+                <!-- countdown bar: shrinks as the toast times out; hovering refills + pauses it -->
+                <Border Grid.Row="1" Height="3" Margin="0,11,0,0" CornerRadius="2" ClipToBounds="True"
+                        Background="{DynamicResource CardHi}">
+                    <Panel>
+                        <Border HorizontalAlignment="Stretch" RenderTransformOrigin="0%,50%"
+                                Background="{DynamicResource Good}" IsVisible="{Binding !ToastIsError}">
+                            <Border.RenderTransform>
+                                <ScaleTransform ScaleX="{Binding ToastProgress}" />
+                            </Border.RenderTransform>
+                        </Border>
+                        <Border HorizontalAlignment="Stretch" RenderTransformOrigin="0%,50%"
+                                Background="{DynamicResource Bad}" IsVisible="{Binding ToastIsError}">
+                            <Border.RenderTransform>
+                                <ScaleTransform ScaleX="{Binding ToastProgress}" />
+                            </Border.RenderTransform>
+                        </Border>
+                    </Panel>
+                </Border>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

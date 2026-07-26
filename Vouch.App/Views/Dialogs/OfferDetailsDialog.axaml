@@ -1,0 +1,188 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Vouch.App.ViewModels"
+             xmlns:loc="using:Vouch.App.Localization"
+             x:Class="Vouch.App.Views.Dialogs.OfferDetailsDialog"
+             x:DataType="vm:MainViewModel">
+
+    <UserControl.Styles>
+        <!-- friendship chip: green when a friend, neutral otherwise -->
+        <Style Selector="Border.factchip">
+            <Setter Property="Background" Value="{DynamicResource Card}" />
+        </Style>
+        <Style Selector="Border.factchip.isfriend">
+            <Setter Property="Background" Value="{DynamicResource AcceptBg}" />
+        </Style>
+        <Style Selector="Border.factchip TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource TextHi}" />
+        </Style>
+        <Style Selector="Border.factchip.isfriend TextBlock">
+            <Setter Property="Foreground" Value="White" />
+        </Style>
+    </UserControl.Styles>
+
+    <UserControl.Resources>
+        <!-- one inventory-style item tile: image + stack count, name/game/appid on hover -->
+        <DataTemplate x:Key="ItemTile" x:DataType="vm:TradeLine">
+            <Border Width="62" Height="62" Margin="3" CornerRadius="4"
+                    Background="{DynamicResource Card}" BorderBrush="{DynamicResource DialogBorder}"
+                    BorderThickness="1" ToolTip.Tip="{Binding Tooltip}">
+                <Panel>
+                    <Image Source="{Binding Image}" Margin="5" Stretch="Uniform" />
+                    <Border IsVisible="{Binding HasCount}" HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                            Background="#CC101418" CornerRadius="3" Padding="4,0" Margin="0,0,2,2">
+                        <TextBlock Text="{Binding CountText}" Foreground="White" FontSize="11" FontWeight="Bold" />
+                    </Border>
+                </Panel>
+            </Border>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <Border Classes="dialog" Width="520" IsVisible="{Binding ShowOfferDetails}"
+            MaxHeight="{Binding $parent[Panel].Bounds.Height, Converter={StaticResource Subtract}, ConverterParameter=72}">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Spacing="14" Margin="0,0,8,0">
+
+            <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Classes="dlgTitle" Text="{Binding DetailOffer.Direction}" VerticalAlignment="Center" />
+                <Button Grid.Column="1" Content="✕" Background="Transparent" VerticalAlignment="Top"
+                        Foreground="{DynamicResource TextLo}" Command="{Binding CloseDialogsCommand}" />
+            </Grid>
+
+            <!-- the two parties -->
+            <Border Background="{DynamicResource CardHi}" CornerRadius="10" Padding="14">
+                <StackPanel Spacing="12">
+                    <Grid ColumnDefinitions="*,Auto,*">
+                        <!-- you -->
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10">
+                            <Panel Width="42" Height="42">
+                                <Ellipse Width="42" Height="42" Fill="{DynamicResource Card}" />
+                                <Ellipse Width="42" Height="42">
+                                    <Ellipse.Fill>
+                                        <ImageBrush Source="{Binding SelectedAccount.Avatar}" Stretch="UniformToFill" />
+                                    </Ellipse.Fill>
+                                </Ellipse>
+                            </Panel>
+                            <StackPanel VerticalAlignment="Center" Spacing="1">
+                                <TextBlock Text="{loc:T Offers_You}" Foreground="{DynamicResource AccentDim}" FontSize="10.5" FontWeight="SemiBold" />
+                                <TextBlock Text="{Binding SelectedAccount.PersonaName}" Foreground="{DynamicResource TextHi}" FontSize="13" />
+                                <TextBlock Text="{Binding SelectedAccount.SteamId}" Foreground="{DynamicResource TextLo}" FontSize="10.5" />
+                            </StackPanel>
+                        </StackPanel>
+
+                        <TextBlock Grid.Column="1" Text="⇄" FontSize="16" VerticalAlignment="Center" Margin="8,0"
+                                   Foreground="{DynamicResource TextLo}" />
+
+                        <!-- partner -->
+                        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="10">
+                            <Panel Width="42" Height="42">
+                                <Ellipse Width="42" Height="42" Fill="{DynamicResource Card}" />
+                                <Ellipse Width="42" Height="42">
+                                    <Ellipse.Fill>
+                                        <ImageBrush Source="{Binding DetailOffer.PartnerAvatar}" Stretch="UniformToFill" />
+                                    </Ellipse.Fill>
+                                </Ellipse>
+                            </Panel>
+                            <StackPanel VerticalAlignment="Center" Spacing="1">
+                                <TextBlock Text="{loc:T Offers_Partner}" Foreground="{DynamicResource AccentDim}" FontSize="10.5" FontWeight="SemiBold" />
+                                <TextBlock Text="{Binding DetailOffer.PartnerName}" IsVisible="{Binding DetailOffer.HasPartnerName}"
+                                           Foreground="{DynamicResource TextHi}" FontSize="13" />
+                                <TextBlock Text="{Binding DetailOffer.PartnerSteamId64}" Foreground="{DynamicResource TextLo}" FontSize="10.5" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- partner facts: level / member since / friendship -->
+                    <WrapPanel IsVisible="{Binding DetailOffer.PartnerInfoLoaded}">
+                        <Border Background="{DynamicResource Card}" CornerRadius="6" Padding="8,3" Margin="0,0,6,0"
+                                IsVisible="{Binding DetailOffer.HasLevel}">
+                            <StackPanel Orientation="Horizontal" Spacing="5">
+                                <TextBlock Text="{loc:T Offers_Level}" Foreground="{DynamicResource TextLo}" FontSize="11" />
+                                <TextBlock Text="{Binding DetailOffer.PartnerLevel}" Foreground="{DynamicResource TextHi}" FontSize="11" FontWeight="Bold" />
+                            </StackPanel>
+                        </Border>
+                        <Border Background="{DynamicResource Card}" CornerRadius="6" Padding="8,3" Margin="0,0,6,0"
+                                IsVisible="{Binding DetailOffer.HasMemberSince}">
+                            <StackPanel Orientation="Horizontal" Spacing="5">
+                                <TextBlock Text="{loc:T Offers_MemberSince}" Foreground="{DynamicResource TextLo}" FontSize="11" />
+                                <TextBlock Text="{Binding DetailOffer.MemberSince}" Foreground="{DynamicResource TextHi}" FontSize="11" FontWeight="Bold" />
+                            </StackPanel>
+                        </Border>
+                        <Border Classes="factchip" Classes.isfriend="{Binding DetailOffer.IsPartnerFriend}"
+                                CornerRadius="6" Padding="8,3" IsVisible="{Binding DetailOffer.HasFriendText}">
+                            <TextBlock Text="{Binding DetailOffer.FriendText}" FontSize="11" FontWeight="Bold" />
+                        </Border>
+                    </WrapPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- message -->
+            <StackPanel Spacing="6">
+                <TextBlock Text="{loc:T Offers_MessageLabel}" Foreground="{DynamicResource AccentDim}"
+                           FontSize="12" FontWeight="SemiBold" />
+                <Border Background="{DynamicResource CardHi}" CornerRadius="8" Padding="12,8">
+                    <TextBlock Text="{Binding DetailOffer.MessageOrNone}" Foreground="{DynamicResource TextLo}"
+                               FontSize="12" TextWrapping="Wrap" />
+                </Border>
+            </StackPanel>
+
+            <!-- You receive -->
+            <StackPanel Spacing="6">
+                <TextBlock Text="{loc:T Offers_YouReceive}" Foreground="{DynamicResource AccentDim}"
+                           FontSize="12" FontWeight="SemiBold" />
+                <Border Background="{DynamicResource CardHi}" CornerRadius="8" Padding="6" MinHeight="80">
+                    <Panel>
+                        <ItemsControl ItemsSource="{Binding DetailOffer.ReceiveLines}"
+                                      ItemTemplate="{StaticResource ItemTile}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                        </ItemsControl>
+                        <TextBlock Text="{loc:T Offers_Nothing}" IsVisible="{Binding !DetailOffer.HasReceive}"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                                   Foreground="{DynamicResource TextLo}" FontSize="12" />
+                    </Panel>
+                </Border>
+            </StackPanel>
+
+            <TextBlock Text="⇅" FontSize="18" HorizontalAlignment="Center"
+                       Foreground="{DynamicResource TextLo}" Margin="0,-4" />
+
+            <!-- You give -->
+            <StackPanel Spacing="6">
+                <TextBlock Text="{loc:T Offers_YouGive}" Foreground="{DynamicResource AccentDim}"
+                           FontSize="12" FontWeight="SemiBold" />
+                <Border Background="{DynamicResource CardHi}" CornerRadius="8" Padding="6" MinHeight="80">
+                    <Panel>
+                        <ItemsControl ItemsSource="{Binding DetailOffer.GiveLines}"
+                                      ItemTemplate="{StaticResource ItemTile}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                        </ItemsControl>
+                        <TextBlock Text="{loc:T Offers_Nothing}" IsVisible="{Binding !DetailOffer.HasGive}"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                                   Foreground="{DynamicResource TextLo}" FontSize="12" />
+                    </Panel>
+                </Border>
+            </StackPanel>
+
+            <Grid ColumnDefinitions="*,Auto" Margin="0,4,0,0">
+                <Button Grid.Column="0" Classes="rowlink" HorizontalAlignment="Left" VerticalAlignment="Center"
+                        Command="{Binding OpenOfferCommand}" CommandParameter="{Binding DetailOffer}">
+                    <TextBlock Text="{loc:T Offers_OpenOnSteam}" Foreground="{DynamicResource Accent}" FontSize="12.5" />
+                </Button>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                    <Button Classes="pill accept" Content="{loc:T Confirm_Accept}"
+                            IsVisible="{Binding DetailOffer.IsIncoming}"
+                            Command="{Binding AcceptOfferCommand}" CommandParameter="{Binding DetailOffer}" />
+                    <Button Classes="pill deny" Content="{Binding DetailOffer.DeclineLabel}"
+                            Command="{Binding DeclineOfferCommand}" CommandParameter="{Binding DetailOffer}" />
+                    <Button Classes="ghost" Content="{loc:T Common_Close}" Command="{Binding CloseDialogsCommand}" />
+                </StackPanel>
+            </Grid>
+
+        </StackPanel>
+        </ScrollViewer>
+    </Border>
+</UserControl>

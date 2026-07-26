@@ -1,0 +1,27 @@
+# ---- .NET build output ----
+[Bb]in/
+[Oo]bj/
+[Oo]ut/
+*.user
+*.suo
+*.userprefs
+.vs/
+.idea/
+*.rsp
+
+# ---- Rider / VS ----
+*.sln.DotSettings.user
+
+# ---- OS ----
+Thumbs.db
+.DS_Store
+
+# ---- Local scratch ----
+*.log
+
+# ---- Upstream reference (original SDA, downloaded for reference, not our code) ----
+# Remove this line if you want the reference tracked in-repo.
+SteamDesktopAuthenticator-master/
+
+# Claude Code local settings
+.claude/

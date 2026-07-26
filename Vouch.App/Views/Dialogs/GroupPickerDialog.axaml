@@ -1,0 +1,53 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Vouch.App.ViewModels"
+             xmlns:loc="using:Vouch.App.Localization"
+             x:Class="Vouch.App.Views.Dialogs.GroupPickerDialog"
+             x:DataType="vm:MainViewModel">
+
+    <Border Classes="dialog" Width="400" IsVisible="{Binding ShowGroupPicker}"
+            VerticalAlignment="Center" HorizontalAlignment="Center">
+        <StackPanel Spacing="14">
+            <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Classes="dlgTitle" Text="{Binding GroupDialogTitle}" VerticalAlignment="Center" />
+                <Button Grid.Column="1" Content="✕" Background="Transparent"
+                        Foreground="{DynamicResource TextLo}" Command="{Binding CloseDialogsCommand}" />
+            </Grid>
+
+            <!-- existing groups to pick (only when moving accounts) -->
+            <StackPanel Spacing="6" IsVisible="{Binding GroupDialogShowPick}">
+                <TextBlock Classes="dlgLabel" Text="{loc:T Group_PickExisting}" />
+                <WrapPanel>
+                    <Button Classes="pill" Padding="10,5" Margin="0,0,6,6"
+                            Background="{DynamicResource CardHi}" Foreground="{DynamicResource TextHi}"
+                            Content="{loc:T Group_Default}"
+                            Command="{Binding PickGroupCommand}" CommandParameter="" />
+                    <ItemsControl ItemsSource="{Binding GroupNames}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="x:String">
+                                <Button Classes="pill" Padding="10,5" Margin="0,0,6,6"
+                                        Background="{DynamicResource CardHi}" Foreground="{DynamicResource TextHi}"
+                                        Content="{Binding}"
+                                        Command="{Binding $parent[ItemsControl].((vm:MainViewModel)DataContext).PickGroupCommand}"
+                                        CommandParameter="{Binding}" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </WrapPanel>
+            </StackPanel>
+
+            <StackPanel Spacing="6">
+                <TextBlock Classes="dlgLabel" Text="{loc:T Group_NewName}" />
+                <TextBox Text="{Binding GroupPickerName}" PlaceholderText="{loc:T Group_NewNamePh}" />
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+                <Button Classes="ghost" Content="{loc:T Common_Cancel}" Command="{Binding CloseDialogsCommand}" />
+                <Button Classes="primary" Content="{loc:T Group_Confirm}" Command="{Binding ConfirmGroupDialogCommand}" />
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</UserControl>

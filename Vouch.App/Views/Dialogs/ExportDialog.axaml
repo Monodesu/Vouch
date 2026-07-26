@@ -1,0 +1,48 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Vouch.App.ViewModels"
+             xmlns:loc="using:Vouch.App.Localization"
+             x:Class="Vouch.App.Views.Dialogs.ExportDialog"
+             x:DataType="vm:MainViewModel">
+
+    <Border Classes="dialog" Width="460" IsVisible="{Binding ShowExport}"
+            MaxHeight="{Binding $parent[Panel].Bounds.Height, Converter={StaticResource Subtract}, ConverterParameter=72}">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Spacing="16" Margin="0,0,8,0">
+            <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Classes="dlgTitle" Text="{loc:T Export_Title}" VerticalAlignment="Center" />
+                <Button Grid.Column="1" Content="✕" Background="Transparent"
+                        Foreground="{DynamicResource TextLo}" Command="{Binding CloseDialogsCommand}" />
+            </Grid>
+            <StackPanel DataContext="{Binding SelectedAccount}" Spacing="2">
+                <TextBlock Classes="dlgLabel" Text="{loc:T Common_AccountLabel}" />
+                <TextBlock Text="{Binding PersonaName}" Foreground="{DynamicResource TextHi}" FontSize="15" />
+                <TextBlock Text="{Binding SteamId}" Foreground="{DynamicResource TextLo}" FontSize="12" />
+            </StackPanel>
+            <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Text="{loc:T Export_Encrypt}" Foreground="{DynamicResource TextHi}" VerticalAlignment="Center" />
+                <ToggleSwitch Grid.Column="1" IsChecked="{Binding ExportEncrypt}" HorizontalAlignment="Right" />
+            </Grid>
+            <StackPanel Spacing="6" IsVisible="{Binding ExportEncrypt}">
+                <TextBlock Classes="dlgLabel" Text="{loc:T Common_PasskeyLabel}" />
+                <TextBox Text="{Binding ExportPassword}" PasswordChar="•" PlaceholderText="{loc:T Common_PasskeyPh}" />
+            </StackPanel>
+            <Border Background="{DynamicResource WarnBg}" CornerRadius="8" Padding="12,10"
+                    IsVisible="{Binding !ExportEncrypt}">
+                <TextBlock Foreground="{DynamicResource WarnText}" FontSize="12" TextWrapping="Wrap"
+                           Text="{loc:T Export_PlaintextWarn}" />
+            </Border>
+            <Button Classes="ghost" HorizontalAlignment="Left" Command="{Binding DoExportCommand}">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <TextBlock Text="💾" />
+                    <TextBlock Text="{loc:T Export_Button}" />
+                </StackPanel>
+            </Button>
+            <TextBlock Text="{Binding ExportStatus}" Foreground="{DynamicResource TextHi}"
+                       FontSize="12" TextWrapping="Wrap" IsVisible="{Binding ExportStatus, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+            <Button Classes="primary" Content="{loc:T Common_Close}" HorizontalAlignment="Right"
+                    Command="{Binding CloseDialogsCommand}" />
+        </StackPanel>
+        </ScrollViewer>
+    </Border>
+</UserControl>

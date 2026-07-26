@@ -1,0 +1,120 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ResourceDictionary.ThemeDictionaries>
+
+        <!-- ============================ DARK ============================ -->
+        <ResourceDictionary x:Key="Dark">
+            <SolidColorBrush x:Key="Bg0" Color="#12161C" />
+            <SolidColorBrush x:Key="Bg1" Color="#171D25" />
+            <SolidColorBrush x:Key="Card" Color="#1E2A38" />
+            <SolidColorBrush x:Key="CardHi" Color="#25384D" />
+            <SolidColorBrush x:Key="Stroke" Color="#33445A" />
+            <SolidColorBrush x:Key="Accent" Color="#66C0F4" />
+            <SolidColorBrush x:Key="AccentDim" Color="#3A6A8C" />
+            <SolidColorBrush x:Key="OnAccent" Color="#0C1116" />
+            <SolidColorBrush x:Key="Good" Color="#A4D007" />
+            <SolidColorBrush x:Key="Bad" Color="#E05C5C" />
+            <SolidColorBrush x:Key="TextHi" Color="#EAF1F8" />
+            <SolidColorBrush x:Key="TextLo" Color="#8CA3B8" />
+            <SolidColorBrush x:Key="InputBg" Color="#131A22" />
+            <SolidColorBrush x:Key="DialogBg" Color="#1B2430" />
+            <SolidColorBrush x:Key="DialogBorder" Color="#2C3E52" />
+            <SolidColorBrush x:Key="Scrim" Color="#B4070B10" />
+            <SolidColorBrush x:Key="RingTrack" Color="#14202C" />
+            <SolidColorBrush x:Key="ChipGoodBg" Color="#183021" />
+            <SolidColorBrush x:Key="ChipBadBg" Color="#3A1D1D" />
+            <SolidColorBrush x:Key="ChipUpdatedBg" Color="#1E3A24" />
+            <SolidColorBrush x:Key="WarnBg" Color="#3A2A16" />
+            <SolidColorBrush x:Key="WarnText" Color="#E6B84D" />
+            <SolidColorBrush x:Key="AcceptBg" Color="#2E7D32" />
+            <SolidColorBrush x:Key="AcceptHoverBg" Color="#388E3C" />
+            <SolidColorBrush x:Key="AcceptFg" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="DenyBg" Color="#3A2730" />
+            <SolidColorBrush x:Key="DenyHoverBg" Color="#5A2E38" />
+            <SolidColorBrush x:Key="DenyFg" Color="#E7A0A0" />
+            <!-- MenuFlyout item states (match CardHi / TextHi above) -->
+            <SolidColorBrush x:Key="MenuFlyoutItemForeground" Color="#EAF1F8" />
+            <SolidColorBrush x:Key="MenuFlyoutItemForegroundPointerOver" Color="#EAF1F8" />
+            <SolidColorBrush x:Key="MenuFlyoutItemForegroundPressed" Color="#EAF1F8" />
+            <SolidColorBrush x:Key="MenuFlyoutItemBackgroundPointerOver" Color="#25384D" />
+            <SolidColorBrush x:Key="MenuFlyoutItemBackgroundPressed" Color="#25384D" />
+            <!-- ComboBox: match the dark inputs (InputBg / DialogBorder / TextHi / Accent focus) -->
+            <SolidColorBrush x:Key="ComboBoxBackground" Color="#131A22" />
+            <SolidColorBrush x:Key="ComboBoxBackgroundPointerOver" Color="#1E2A38" />
+            <SolidColorBrush x:Key="ComboBoxBackgroundPressed" Color="#131A22" />
+            <SolidColorBrush x:Key="ComboBoxBackgroundFocused" Color="#131A22" />
+            <SolidColorBrush x:Key="ComboBoxForeground" Color="#EAF1F8" />
+            <SolidColorBrush x:Key="ComboBoxForegroundPointerOver" Color="#EAF1F8" />
+            <SolidColorBrush x:Key="ComboBoxForegroundPressed" Color="#EAF1F8" />
+            <SolidColorBrush x:Key="ComboBoxForegroundFocused" Color="#EAF1F8" />
+            <SolidColorBrush x:Key="ComboBoxBorderBrush" Color="#2C3E52" />
+            <SolidColorBrush x:Key="ComboBoxBorderBrushPointerOver" Color="#66C0F4" />
+            <SolidColorBrush x:Key="ComboBoxBorderBrushPressed" Color="#66C0F4" />
+            <SolidColorBrush x:Key="ComboBoxBorderBrushFocused" Color="#66C0F4" />
+            <SolidColorBrush x:Key="ComboBoxDropDownBackground" Color="#1B2430" />
+            <SolidColorBrush x:Key="ComboBoxDropDownBorderBrush" Color="#2C3E52" />
+            <SolidColorBrush x:Key="ComboBoxItemForeground" Color="#EAF1F8" />
+            <SolidColorBrush x:Key="ComboBoxItemBackgroundPointerOver" Color="#25384D" />
+            <SolidColorBrush x:Key="ComboBoxItemBackgroundSelected" Color="#25384D" />
+            <SolidColorBrush x:Key="ComboBoxItemBackgroundSelectedPointerOver" Color="#2C4157" />
+        </ResourceDictionary>
+
+        <!-- ============================ LIGHT ============================ -->
+        <ResourceDictionary x:Key="Light">
+            <SolidColorBrush x:Key="Bg0" Color="#EDF0F4" />
+            <SolidColorBrush x:Key="Bg1" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="Card" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="CardHi" Color="#E7EDF3" />
+            <SolidColorBrush x:Key="Stroke" Color="#C9D3DE" />
+            <SolidColorBrush x:Key="Accent" Color="#1C86C9" />
+            <SolidColorBrush x:Key="AccentDim" Color="#5E93BC" />
+            <SolidColorBrush x:Key="OnAccent" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="Good" Color="#4E8C0A" />
+            <SolidColorBrush x:Key="Bad" Color="#CC3B3B" />
+            <SolidColorBrush x:Key="TextHi" Color="#16202B" />
+            <SolidColorBrush x:Key="TextLo" Color="#5E7183" />
+            <SolidColorBrush x:Key="InputBg" Color="#EEF2F6" />
+            <SolidColorBrush x:Key="DialogBg" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="DialogBorder" Color="#DCE3EA" />
+            <SolidColorBrush x:Key="Scrim" Color="#4A000000" />
+            <SolidColorBrush x:Key="RingTrack" Color="#D6DEE7" />
+            <SolidColorBrush x:Key="ChipGoodBg" Color="#DDEFD6" />
+            <SolidColorBrush x:Key="ChipBadBg" Color="#F6DEDE" />
+            <SolidColorBrush x:Key="ChipUpdatedBg" Color="#DCEFDF" />
+            <SolidColorBrush x:Key="WarnBg" Color="#FBF1D6" />
+            <SolidColorBrush x:Key="WarnText" Color="#8A5A00" />
+            <SolidColorBrush x:Key="AcceptBg" Color="#2E7D32" />
+            <SolidColorBrush x:Key="AcceptHoverBg" Color="#388E3C" />
+            <SolidColorBrush x:Key="AcceptFg" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="DenyBg" Color="#EBD6D6" />
+            <SolidColorBrush x:Key="DenyHoverBg" Color="#E0C4C4" />
+            <SolidColorBrush x:Key="DenyFg" Color="#B23A3A" />
+            <!-- MenuFlyout item states (match CardHi / TextHi above) -->
+            <SolidColorBrush x:Key="MenuFlyoutItemForeground" Color="#16202B" />
+            <SolidColorBrush x:Key="MenuFlyoutItemForegroundPointerOver" Color="#16202B" />
+            <SolidColorBrush x:Key="MenuFlyoutItemForegroundPressed" Color="#16202B" />
+            <SolidColorBrush x:Key="MenuFlyoutItemBackgroundPointerOver" Color="#E7EDF3" />
+            <SolidColorBrush x:Key="MenuFlyoutItemBackgroundPressed" Color="#E7EDF3" />
+            <!-- ComboBox: match the light inputs (InputBg / DialogBorder / TextHi / Accent focus) -->
+            <SolidColorBrush x:Key="ComboBoxBackground" Color="#EEF2F6" />
+            <SolidColorBrush x:Key="ComboBoxBackgroundPointerOver" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="ComboBoxBackgroundPressed" Color="#EEF2F6" />
+            <SolidColorBrush x:Key="ComboBoxBackgroundFocused" Color="#EEF2F6" />
+            <SolidColorBrush x:Key="ComboBoxForeground" Color="#16202B" />
+            <SolidColorBrush x:Key="ComboBoxForegroundPointerOver" Color="#16202B" />
+            <SolidColorBrush x:Key="ComboBoxForegroundPressed" Color="#16202B" />
+            <SolidColorBrush x:Key="ComboBoxForegroundFocused" Color="#16202B" />
+            <SolidColorBrush x:Key="ComboBoxBorderBrush" Color="#DCE3EA" />
+            <SolidColorBrush x:Key="ComboBoxBorderBrushPointerOver" Color="#1C86C9" />
+            <SolidColorBrush x:Key="ComboBoxBorderBrushPressed" Color="#1C86C9" />
+            <SolidColorBrush x:Key="ComboBoxBorderBrushFocused" Color="#1C86C9" />
+            <SolidColorBrush x:Key="ComboBoxDropDownBackground" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="ComboBoxDropDownBorderBrush" Color="#DCE3EA" />
+            <SolidColorBrush x:Key="ComboBoxItemForeground" Color="#16202B" />
+            <SolidColorBrush x:Key="ComboBoxItemBackgroundPointerOver" Color="#E7EDF3" />
+            <SolidColorBrush x:Key="ComboBoxItemBackgroundSelected" Color="#E7EDF3" />
+            <SolidColorBrush x:Key="ComboBoxItemBackgroundSelectedPointerOver" Color="#DCE6EF" />
+        </ResourceDictionary>
+
+    </ResourceDictionary.ThemeDictionaries>
+</ResourceDictionary>

@@ -1,0 +1,200 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Vouch.App.ViewModels"
+             xmlns:loc="using:Vouch.App.Localization"
+             x:Class="Vouch.App.Views.SidebarView"
+             x:DataType="vm:MainViewModel">
+
+    <UserControl.Styles>
+        <!-- a dragged row dims (smoothly) while its ghost floats under the cursor -->
+        <Style Selector="Grid.accountRow">
+            <Setter Property="Transitions">
+                <Transitions>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.12" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Grid.accountRow.dragging">
+            <Setter Property="Opacity" Value="0.3" />
+        </Style>
+
+        <Style Selector="Button.grouphdr">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="8,6,10,4" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style Selector="Button.grouphdr:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+    </UserControl.Styles>
+
+    <UserControl.Resources>
+        <!-- shown when right-clicking an account (or with a selection) -->
+        <MenuFlyout x:Key="AccountMenu">
+            <MenuItem Header="{loc:T Side_SignInSelected}" Click="SignInSelected_Click" />
+            <MenuItem Header="{loc:T Side_UpdateSelected}" Click="UpdateSelected_Click" />
+            <MenuItem Header="{loc:T Side_TransferSelected}" Click="TransferSelected_Click" />
+            <Separator />
+            <MenuItem Header="{loc:T Side_MoveToGroup}" Click="MoveToGroup_Click" />
+            <MenuItem Header="{loc:T Side_ExportSelected}" Click="ExportSelected_Click" />
+            <Separator />
+            <MenuItem Header="{loc:T Side_DeactivateSelected}" Click="DeactivateSelected_Click" />
+            <MenuItem Header="{loc:T Side_RemoveSelected}" Click="RemoveSelected_Click" />
+        </MenuFlyout>
+        <!-- shown when right-clicking empty space with nothing selected -->
+        <MenuFlyout x:Key="NewGroupMenu">
+            <MenuItem Header="{loc:T Side_NewGroup}" Click="NewGroup_Click" />
+        </MenuFlyout>
+    </UserControl.Resources>
+
+    <Border Background="{DynamicResource Bg1}">
+        <Grid RowDefinitions="Auto,Auto,*,Auto">
+
+            <!-- the brand lives in the title bar now; just the account count here -->
+            <TextBlock Grid.Row="0" Text="{Binding AccountsLabel}" Margin="20,14,18,4"
+                       Foreground="{DynamicResource TextLo}" FontSize="11" FontWeight="SemiBold" />
+
+            <!-- search -->
+            <TextBox Grid.Row="1" Margin="14,4,14,8" PlaceholderText="{loc:T Side_Search}"
+                     CornerRadius="9" Background="{DynamicResource InputBg}" BorderThickness="0"
+                     Foreground="{DynamicResource TextHi}" />
+
+            <!-- account list (multi-select + drag to reorder) -->
+            <Panel Grid.Row="2">
+            <ListBox x:Name="AccountList" ItemsSource="{Binding SidebarItems}"
+                     SelectedItem="{Binding SelectedAccount}"
+                     SelectionMode="Multiple"
+                     Background="Transparent" BorderThickness="0"
+                     ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                <!-- non-virtualizing so scrolling is pixel-based (smooth wheel animation in code-behind) -->
+                <ListBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel />
+                    </ItemsPanelTemplate>
+                </ListBox.ItemsPanel>
+                <ListBox.DataTemplates>
+                    <!-- group header row: collapse toggle + name + count -->
+                    <DataTemplate DataType="vm:GroupHeader">
+                        <Button Classes="grouphdr" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
+                                Command="{Binding $parent[ListBox].((vm:MainViewModel)DataContext).ToggleGroupCollapseCommand}"
+                                CommandParameter="{Binding}">
+                            <Button.ContextFlyout>
+                                <MenuFlyout>
+                                    <MenuItem Header="{loc:T Group_Rename}" Click="RenameGroup_Click"
+                                              IsEnabled="{Binding !IsDefault}" />
+                                    <MenuItem Header="{loc:T Group_Delete}" Click="DeleteGroup_Click"
+                                              IsEnabled="{Binding !IsDefault}" />
+                                </MenuFlyout>
+                            </Button.ContextFlyout>
+                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                <TextBlock Grid.Column="0" Text="{Binding Glyph}" Foreground="{DynamicResource TextLo}"
+                                           FontSize="10" VerticalAlignment="Center" Width="14" />
+                                <TextBlock Grid.Column="1" Text="{Binding Display}" Foreground="{DynamicResource TextLo}"
+                                           FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center"
+                                           TextTrimming="CharacterEllipsis" />
+                                <TextBlock Grid.Column="2" Text="{Binding Count}" Foreground="{DynamicResource TextLo}"
+                                           FontSize="11" VerticalAlignment="Center" Margin="6,0,0,0" />
+                            </Grid>
+                        </Button>
+                    </DataTemplate>
+
+                    <!-- account row -->
+                    <DataTemplate DataType="vm:AccountViewModel">
+                        <Grid ColumnDefinitions="Auto,*,Auto" Classes="accountRow"
+                              Classes.dragging="{Binding IsDragging}">
+                            <Panel Grid.Column="0" Width="38" Height="38">
+                                <Border CornerRadius="19" Background="{Binding AvatarBrush}"
+                                        IsVisible="{Binding !HasAvatar}">
+                                    <TextBlock Text="{Binding Initials}" Foreground="{DynamicResource OnAccent}"
+                                               FontWeight="Bold" FontSize="14"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Border>
+                                <Ellipse Width="38" Height="38" IsVisible="{Binding HasAvatar}">
+                                    <Ellipse.Fill>
+                                        <ImageBrush Source="{Binding Avatar}" Stretch="UniformToFill" />
+                                    </Ellipse.Fill>
+                                </Ellipse>
+                            </Panel>
+                            <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding PersonaName}" Foreground="{DynamicResource TextHi}"
+                                           FontSize="13.5" FontWeight="Medium" />
+                                <TextBlock Text="{Binding Username}" Foreground="{DynamicResource TextLo}"
+                                           FontSize="11" />
+                            </StackPanel>
+                            <Border Grid.Column="2" VerticalAlignment="Center"
+                                    IsVisible="{Binding HasPending}"
+                                    Background="{DynamicResource Accent}" CornerRadius="10"
+                                    MinWidth="20" Height="20" Padding="6,0">
+                                <TextBlock Text="{Binding PendingConfirmations}" Foreground="{DynamicResource OnAccent}"
+                                           FontSize="11" FontWeight="Bold"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                        </Grid>
+                    </DataTemplate>
+                </ListBox.DataTemplates>
+            </ListBox>
+            <!-- drop indicator + floating drag ghost during drag-reorder -->
+            <Canvas x:Name="DropOverlay" IsHitTestVisible="False">
+                <Border x:Name="DropLine" Height="2" CornerRadius="1" IsVisible="False"
+                        Background="{DynamicResource Accent}" />
+                <Border x:Name="DragGhost" x:DataType="vm:AccountViewModel" IsVisible="False"
+                        Background="{DynamicResource CardHi}" CornerRadius="10" Padding="10,8"
+                        Opacity="0.92" BorderThickness="1" BorderBrush="{DynamicResource Accent}"
+                        BoxShadow="0 10 24 0 #77000000" MinWidth="180" MaxWidth="220">
+                    <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                        <Panel Width="26" Height="26">
+                            <Border CornerRadius="13" Background="{Binding AvatarBrush}" IsVisible="{Binding !HasAvatar}">
+                                <TextBlock Text="{Binding Initials}" Foreground="{DynamicResource OnAccent}"
+                                           FontWeight="Bold" FontSize="11"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                            <Ellipse Width="26" Height="26" IsVisible="{Binding HasAvatar}">
+                                <Ellipse.Fill>
+                                    <ImageBrush Source="{Binding Avatar}" Stretch="UniformToFill" />
+                                </Ellipse.Fill>
+                            </Ellipse>
+                        </Panel>
+                        <TextBlock Text="{Binding PersonaName}" Foreground="{DynamicResource TextHi}"
+                                   FontSize="13" FontWeight="Medium" VerticalAlignment="Center"
+                                   TextTrimming="CharacterEllipsis" />
+                        <Border x:Name="DragCountBadge" IsVisible="False" VerticalAlignment="Center"
+                                Background="{DynamicResource Accent}" CornerRadius="9" MinWidth="20" Height="20" Padding="6,0">
+                            <TextBlock x:Name="DragCountText" Foreground="{DynamicResource OnAccent}"
+                                       FontSize="11" FontWeight="Bold"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                    </StackPanel>
+                </Border>
+            </Canvas>
+            </Panel>
+
+            <!-- footer -->
+            <Grid Grid.Row="3" ColumnDefinitions="*,Auto" Margin="14,8,14,16">
+                <Button Grid.Column="0" Classes="pill" HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"
+                        Background="{DynamicResource Accent}" Foreground="{DynamicResource OnAccent}">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="+" FontSize="16" FontWeight="Bold" />
+                        <TextBlock Text="{loc:T Side_AddAccount}" />
+                        <TextBlock Text="▾" FontSize="12" />
+                    </StackPanel>
+                    <Button.Flyout>
+                        <MenuFlyout Placement="TopEdgeAlignedLeft" VerticalOffset="-8">
+                            <MenuItem Header="{loc:T Side_MenuSetup}" Command="{Binding OpenWizardCommand}" />
+                            <Separator />
+                            <MenuItem Header="{loc:T Side_MenuImport}" Command="{Binding OpenImportCommand}" />
+                            <MenuItem Header="{loc:T Side_MenuExport}" Command="{Binding OpenExportCommand}" />
+                            <Separator />
+                            <MenuItem Header="{loc:T Side_MenuRemove}" Command="{Binding OpenRemoveCommand}" />
+                        </MenuFlyout>
+                    </Button.Flyout>
+                </Button>
+                <Button Grid.Column="1" Classes="pill" Margin="8,0,0,0"
+                        Command="{Binding OpenSettingsCommand}"
+                        Background="{DynamicResource Card}" Foreground="{DynamicResource TextLo}"
+                        Content="⚙" FontSize="15" ToolTip.Tip="{loc:T Settings_Title}" />
+            </Grid>
+        </Grid>
+    </Border>
+</UserControl>

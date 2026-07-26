@@ -1,0 +1,42 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Vouch.App.ViewModels"
+             x:Class="Vouch.App.Views.Dialogs.FinalizeDialog"
+             x:DataType="vm:MainViewModel">
+
+    <Border Classes="dialog" Width="400" IsVisible="{Binding ShowFinalizePrompt}"
+            VerticalAlignment="Center" HorizontalAlignment="Center">
+        <StackPanel Spacing="14">
+            <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Classes="dlgTitle" Text="Finish setup" VerticalAlignment="Center" />
+                <Button Grid.Column="1" Content="✕" Background="Transparent"
+                        Foreground="{DynamicResource TextLo}" Command="{Binding CancelFinalizeCommand}" />
+            </Grid>
+            <TextBlock Text="Enter the code Steam sent you, and re-enter your revocation code to confirm you saved it."
+                       Foreground="{DynamicResource TextLo}" FontSize="12.5" TextWrapping="Wrap" />
+
+            <StackPanel Spacing="6">
+                <TextBlock Classes="dlgLabel" Text="VERIFICATION CODE" />
+                <TextBox Text="{Binding WizardSmsCode}" PlaceholderText="code Steam emailed or texted you" />
+            </StackPanel>
+            <StackPanel Spacing="6">
+                <TextBlock Classes="dlgLabel" Text="REVOCATION CODE" />
+                <TextBox Text="{Binding WizardRevocationConfirm}" PlaceholderText="re-enter the Rxxxxx code" />
+            </StackPanel>
+
+            <TextBlock Text="{Binding WizardStatus}" Foreground="{DynamicResource TextHi}"
+                       FontSize="12" TextWrapping="Wrap"
+                       IsVisible="{Binding WizardStatus, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+
+            <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+                <Button Classes="ghost" Content="Cancel" Command="{Binding CancelFinalizeCommand}" />
+                <Button Classes="primary" Command="{Binding WizardFinishCommand}">
+                    <Panel>
+                        <TextBlock Text="Finish &amp; add account" IsVisible="{Binding !WizardBusy}" />
+                        <TextBlock Text="Finalizing…" IsVisible="{Binding WizardBusy}" />
+                    </Panel>
+                </Button>
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</UserControl>

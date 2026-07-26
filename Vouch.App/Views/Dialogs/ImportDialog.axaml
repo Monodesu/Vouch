@@ -1,0 +1,41 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Vouch.App.ViewModels"
+             xmlns:loc="using:Vouch.App.Localization"
+             x:Class="Vouch.App.Views.Dialogs.ImportDialog"
+             x:DataType="vm:MainViewModel">
+
+    <Border Classes="dialog" Width="460" IsVisible="{Binding ShowImport}"
+            MaxHeight="{Binding $parent[Panel].Bounds.Height, Converter={StaticResource Subtract}, ConverterParameter=72}">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Spacing="16" Margin="0,0,8,0">
+            <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Classes="dlgTitle" Text="{loc:T Import_Title}" VerticalAlignment="Center" />
+                <Button Grid.Column="1" Content="✕" Background="Transparent"
+                        Foreground="{DynamicResource TextLo}" Command="{Binding CloseDialogsCommand}" />
+            </Grid>
+            <TextBlock Foreground="{DynamicResource TextLo}" FontSize="13" TextWrapping="Wrap"
+                       Text="{loc:T Import_Sub}" />
+            <Button Classes="ghost" HorizontalAlignment="Left" Command="{Binding DoImportCommand}">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <TextBlock Text="📂" />
+                    <TextBlock Text="{loc:T Import_ChooseFile}" />
+                </StackPanel>
+            </Button>
+            <StackPanel Spacing="8" IsVisible="{Binding ImportNeedsPassword}">
+                <TextBlock Classes="dlgLabel" Text="{loc:T Common_PasskeyLabel}" />
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                    <TextBox Text="{Binding ImportPassword}" PasswordChar="•"
+                             PlaceholderText="{loc:T Common_PasskeyPh}" />
+                    <Button Grid.Column="1" Classes="ghost" Content="{loc:T Import_Decrypt}"
+                            Command="{Binding DecryptImportCommand}" />
+                </Grid>
+            </StackPanel>
+            <TextBlock Text="{Binding ImportStatus}" Foreground="{DynamicResource TextHi}"
+                       FontSize="12" TextWrapping="Wrap" IsVisible="{Binding ImportStatus, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+            <Button Classes="primary" Content="{loc:T Common_Close}" HorizontalAlignment="Right"
+                    Command="{Binding CloseDialogsCommand}" />
+        </StackPanel>
+        </ScrollViewer>
+    </Border>
+</UserControl>

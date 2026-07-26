@@ -1,0 +1,25 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Vouch.App.ViewModels"
+             x:Class="Vouch.App.Views.Dialogs.EmailCodeDialog"
+             x:DataType="vm:MainViewModel">
+
+    <Border Classes="dialog" Width="380" IsVisible="{Binding ShowEmailCodePrompt}"
+            VerticalAlignment="Center" HorizontalAlignment="Center">
+        <StackPanel Spacing="14">
+            <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Classes="dlgTitle" Text="Email code" VerticalAlignment="Center" />
+                <Button Grid.Column="1" Content="✕" Background="Transparent"
+                        Foreground="{DynamicResource TextLo}" Command="{Binding CancelEmailCodeCommand}" />
+            </Grid>
+            <TextBlock Text="Steam emailed a verification code. Enter it to continue."
+                       Foreground="{DynamicResource TextLo}" FontSize="12.5" TextWrapping="Wrap" />
+            <TextBox Text="{Binding WizardEmailCode}" PlaceholderText="code from email"
+                     FontSize="16" HorizontalContentAlignment="Center" />
+            <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+                <Button Classes="ghost" Content="Cancel" Command="{Binding CancelEmailCodeCommand}" />
+                <Button Classes="primary" Content="Submit" Command="{Binding WizardSubmitEmailCommand}" />
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</UserControl>
