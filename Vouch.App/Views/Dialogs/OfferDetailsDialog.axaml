@@ -45,8 +45,14 @@
 
             <Grid ColumnDefinitions="*,Auto">
                 <TextBlock Classes="dlgTitle" Text="{Binding DetailOffer.Direction}" VerticalAlignment="Center" />
-                <Button Grid.Column="1" Content="✕" Background="Transparent" VerticalAlignment="Top"
-                        Foreground="{DynamicResource TextLo}" Command="{Binding CloseDialogsCommand}" />
+                <Button Grid.Column="1" Background="Transparent" VerticalAlignment="Top"
+                        Foreground="{DynamicResource TextLo}" Command="{Binding CloseDialogsCommand}">
+                    <Viewbox Width="15" Height="15">
+                        <Canvas Width="24" Height="24">
+                            <Path Data="{StaticResource Ico_Close}" Fill="{DynamicResource TextLo}" />
+                        </Canvas>
+                    </Viewbox>
+                </Button>
             </Grid>
 
             <!-- the two parties -->
@@ -70,8 +76,11 @@
                             </StackPanel>
                         </StackPanel>
 
-                        <TextBlock Grid.Column="1" Text="⇄" FontSize="16" VerticalAlignment="Center" Margin="8,0"
-                                   Foreground="{DynamicResource TextLo}" />
+                        <Viewbox Grid.Column="1" Width="21" Height="21" VerticalAlignment="Center" Margin="8,0">
+                            <Canvas Width="24" Height="24">
+                                <Path Data="{StaticResource Ico_SwapH}" Fill="{DynamicResource TextLo}" />
+                            </Canvas>
+                        </Viewbox>
 
                         <!-- partner -->
                         <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="10">
@@ -145,8 +154,11 @@
                 </Border>
             </StackPanel>
 
-            <TextBlock Text="⇅" FontSize="18" HorizontalAlignment="Center"
-                       Foreground="{DynamicResource TextLo}" Margin="0,-4" />
+            <Viewbox Width="23" Height="23" HorizontalAlignment="Center" Margin="0,-4">
+                <Canvas Width="24" Height="24">
+                    <Path Data="{StaticResource Ico_SwapV}" Fill="{DynamicResource TextLo}" />
+                </Canvas>
+            </Viewbox>
 
             <!-- You give -->
             <StackPanel Spacing="6">

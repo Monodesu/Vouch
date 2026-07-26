@@ -27,6 +27,24 @@ public class LoginApprovalTests
         Assert.Empty(SteamLoginApprovalService.ParseClientIds(Array.Empty<byte>()));
     }
 
+    [Theory]
+    [InlineData("https://s.team/q/1/1234567890", true, 1, 1234567890UL)]
+    [InlineData("https://s.team/q/1/1234567890?abc", true, 1, 1234567890UL)]
+    [InlineData("http://s.team/q/2/999", true, 2, 999UL)]
+    [InlineData("https://steamcommunity.com/foo", false, 0, 0UL)]
+    [InlineData("not a url", false, 0, 0UL)]
+    [InlineData("", false, 0, 0UL)]
+    public void TryParseQrChallenge_ParsesSteamLoginUrls(string url, bool ok, int version, ulong clientId)
+    {
+        var parsed = SteamLoginApprovalService.TryParseQrChallenge(url, out var v, out var c);
+        Assert.Equal(ok, parsed);
+        if (ok)
+        {
+            Assert.Equal(version, v);
+            Assert.Equal(clientId, c);
+        }
+    }
+
     [Fact]
     public void Sign_MatchesManualHmacOverLittleEndianLayout()
     {

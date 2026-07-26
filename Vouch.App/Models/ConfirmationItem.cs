@@ -31,12 +31,12 @@ public class ConfirmationItem
 
     public string Glyph => Kind switch
     {
-        ConfirmationKind.Trade => "\U0001F501",           // repeat
-        ConfirmationKind.MarketListing => "\U0001F3F7",   // tag
-        ConfirmationKind.AccountRecovery => "\U0001F512", // lock
-        ConfirmationKind.ApiKey => "\U0001F511",          // key
-        ConfirmationKind.Login => "\U0001F4BB",           // laptop
-        _ => "❓"
+        ConfirmationKind.Trade => "Ico_Repeat",           // repeat
+        ConfirmationKind.MarketListing => "Ico_Tag",      // tag
+        ConfirmationKind.AccountRecovery => "Ico_Lock",   // lock
+        ConfirmationKind.ApiKey => "Ico_Key",             // key
+        ConfirmationKind.Login => "Ico_Laptop",           // laptop
+        _ => "Ico_Help"
     };
 
     /// <summary>Builds a confirmation-list item for a pending login approval.</summary>

@@ -1,6 +1,7 @@
 using System.Buffers.Binary;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Vouch.Core.Steam;
 
@@ -66,6 +67,30 @@ public class SteamLoginApprovalService
         var http = new HttpClient { Timeout = TimeSpan.FromSeconds(20) };
         http.DefaultRequestHeaders.UserAgent.ParseAdd("Vouch/1.0 (+https://github.com/Monodesu/Vouch)");
         return http;
+    }
+
+    // A Steam login QR encodes a challenge URL like "https://s.team/q/<version>/<client_id>".
+    private static readonly Regex QrChallenge = new(@"^https?://s\.team/q/(\d+)/(\d+)", RegexOptions.IgnoreCase);
+
+    /// <summary>Parses a scanned Steam login QR's challenge URL into its version and client id. Returns
+    /// false for anything that isn't a Steam sign-in QR.</summary>
+    public static bool TryParseQrChallenge(string? url, out int version, out ulong clientId)
+    {
+        version = 0; clientId = 0;
+        if (string.IsNullOrEmpty(url)) return false;
+        var m = QrChallenge.Match(url.Trim());
+        return m.Success
+            && int.TryParse(m.Groups[1].Value, out version)
+            && ulong.TryParse(m.Groups[2].Value, out clientId);
+    }
+
+    /// <summary>Fetches the device/location info for one client id (e.g. a QR challenge), so a scanned
+    /// sign-in can be shown before it's approved. Uses the caller's <paramref name="version"/> (from the
+    /// QR) when the session info doesn't carry one. Returns null if the session can't be read.</summary>
+    public async Task<PendingLoginSession?> FetchInfoAsync(string accessToken, ulong clientId, int version, CancellationToken ct = default)
+    {
+        var info = await FetchInfoAsync(accessToken, clientId, ct);
+        return info is null ? null : info with { Version = version > 0 ? version : info.Version };
     }
 
     /// <summary>Lists the account's pending login approvals (each with the device/location shown to the

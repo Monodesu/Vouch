@@ -58,6 +58,12 @@ public partial class MainViewModel : ViewModelBase
     [ObservableProperty] private bool _codeCopied;
     [ObservableProperty] private bool _userCopied;
     [ObservableProperty] private bool _passCopied;
+    [ObservableProperty] private bool _revoCopied;
+
+    // Revocation code: collapsed by default (expander), then masked behind a reveal toggle — it's the
+    // one-time deactivate secret, so it stays out of sight unless the user goes looking for it.
+    [ObservableProperty] private bool _revocationExpanded;
+    [ObservableProperty] private bool _revealRevocation;
 
     public string Username => SelectedAccount?.Username ?? "";
     public string DisplayPassword
@@ -66,6 +72,17 @@ public partial class MainViewModel : ViewModelBase
         {
             var pw = SelectedAccount?.Password ?? "";
             return PasswordRevealed ? pw : new string('•', pw.Length);
+        }
+    }
+
+    public string Revocation => SelectedAccount?.RevocationCode ?? "";
+    public bool HasRevocation => !string.IsNullOrEmpty(SelectedAccount?.RevocationCode);
+    public string DisplayRevocation
+    {
+        get
+        {
+            var rc = Revocation;
+            return RevealRevocation || rc.Length == 0 ? rc : new string('•', rc.Length);
         }
     }
 
@@ -152,12 +169,17 @@ public partial class MainViewModel : ViewModelBase
     {
         _lastWindow = -1; // force code refresh
         PasswordRevealed = false;
+        RevocationExpanded = false;
+        RevealRevocation = false;
         IsEditingPassword = false;
         ResetCopyFlags();
         if (value is null) CurrentCode = "-----";
         OnPropertyChanged(nameof(HasSelection));
         OnPropertyChanged(nameof(Username));
         OnPropertyChanged(nameof(DisplayPassword));
+        OnPropertyChanged(nameof(Revocation));
+        OnPropertyChanged(nameof(HasRevocation));
+        OnPropertyChanged(nameof(DisplayRevocation));
         RefreshSignInLabel();
         LoadConfirmations(value);
         ResetDetailTabs();
@@ -165,6 +187,7 @@ public partial class MainViewModel : ViewModelBase
     }
 
     partial void OnPasswordRevealedChanged(bool value) => OnPropertyChanged(nameof(DisplayPassword));
+    partial void OnRevealRevocationChanged(bool value) => OnPropertyChanged(nameof(DisplayRevocation));
 
     private void Tick()
     {
@@ -185,7 +208,7 @@ public partial class MainViewModel : ViewModelBase
 
     private void ResetCopyFlags()
     {
-        CodeCopied = UserCopied = PassCopied = false;
+        CodeCopied = UserCopied = PassCopied = RevoCopied = false;
     }
 
     private async void Copy(string text)
@@ -221,6 +244,26 @@ public partial class MainViewModel : ViewModelBase
 
     [RelayCommand]
     private void TogglePassword() => PasswordRevealed = !PasswordRevealed;
+
+    [RelayCommand]
+    private void ToggleRevocationExpand() => RevocationExpanded = !RevocationExpanded;
+
+    // Re-mask the code whenever the section collapses.
+    partial void OnRevocationExpandedChanged(bool value)
+    {
+        if (!value) RevealRevocation = false;
+    }
+
+    [RelayCommand]
+    private void ToggleRevocation() => RevealRevocation = !RevealRevocation;
+
+    [RelayCommand]
+    private void CopyRevocation()
+    {
+        Copy(Revocation);
+        ResetCopyFlags();
+        RevoCopied = true;
+    }
 
     [RelayCommand]
     private void BeginEditPassword()

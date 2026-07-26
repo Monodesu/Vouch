@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Vouch.App.ViewModels"
+             xmlns:loc="using:Vouch.App.Localization"
              x:Class="Vouch.App.Views.Dialogs.EmailCodeDialog"
              x:DataType="vm:MainViewModel">
 
@@ -8,17 +9,23 @@
             VerticalAlignment="Center" HorizontalAlignment="Center">
         <StackPanel Spacing="14">
             <Grid ColumnDefinitions="*,Auto">
-                <TextBlock Classes="dlgTitle" Text="Email code" VerticalAlignment="Center" />
-                <Button Grid.Column="1" Content="✕" Background="Transparent"
-                        Foreground="{DynamicResource TextLo}" Command="{Binding CancelEmailCodeCommand}" />
+                <TextBlock Classes="dlgTitle" Text="{loc:T EmailCode_Title}" VerticalAlignment="Center" />
+                <Button Grid.Column="1" Background="Transparent"
+                        Foreground="{DynamicResource TextLo}" Command="{Binding CancelEmailCodeCommand}">
+                    <Viewbox Width="15" Height="15">
+                        <Canvas Width="24" Height="24">
+                            <Path Data="{StaticResource Ico_Close}" Fill="{DynamicResource TextLo}" />
+                        </Canvas>
+                    </Viewbox>
+                </Button>
             </Grid>
-            <TextBlock Text="Steam emailed a verification code. Enter it to continue."
+            <TextBlock Text="{loc:T EmailCode_Intro}"
                        Foreground="{DynamicResource TextLo}" FontSize="12.5" TextWrapping="Wrap" />
-            <TextBox Text="{Binding WizardEmailCode}" PlaceholderText="code from email"
+            <TextBox Text="{Binding WizardEmailCode}" PlaceholderText="{loc:T EmailCode_Ph}"
                      FontSize="16" HorizontalContentAlignment="Center" />
             <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
-                <Button Classes="ghost" Content="Cancel" Command="{Binding CancelEmailCodeCommand}" />
-                <Button Classes="primary" Content="Submit" Command="{Binding WizardSubmitEmailCommand}" />
+                <Button Classes="ghost" Content="{loc:T Common_Cancel}" Command="{Binding CancelEmailCodeCommand}" />
+                <Button Classes="primary" Content="{loc:T EmailCode_Submit}" Command="{Binding WizardSubmitEmailCommand}" />
             </StackPanel>
         </StackPanel>
     </Border>

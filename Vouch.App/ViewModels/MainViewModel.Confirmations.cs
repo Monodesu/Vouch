@@ -308,12 +308,18 @@ public partial class MainViewModel
     // ---- login-approval detail dialog ----
 
     [ObservableProperty] private bool _showLoginDetail;
-    [ObservableProperty] private bool _loginDetailRemember; // "stay signed in" toggle for the approve
-    private ConfirmationItem? _loginDetailItem;
+    [ObservableProperty] private bool _loginDetailRemember;   // "stay signed in" toggle for the approve
+    [ObservableProperty] private PendingLoginSession? _detailLogin; // the login shown in the detail dialog
+    private ConfirmationItem? _loginDetailItem;               // the list row it came from (null for a scanned QR)
 
-    public PendingLoginSession? DetailLogin => _loginDetailItem?.LoginSession;
     public bool HasDetailMap => DetailLogin is { Geoloc.Length: > 0 };
     public string DetailLoginMapUrl => DetailLogin is { Geoloc: { Length: > 0 } g } ? $"https://www.google.com/maps?q={g}" : "";
+
+    partial void OnDetailLoginChanged(PendingLoginSession? value)
+    {
+        OnPropertyChanged(nameof(HasDetailMap));
+        OnPropertyChanged(nameof(DetailLoginMapUrl));
+    }
 
     /// <summary>Opens the detail view for a pending login (device UA, IP, location, persistence toggle).</summary>
     [RelayCommand]
@@ -321,10 +327,18 @@ public partial class MainViewModel
     {
         if (item?.LoginSession is not { } login) return; // ignore non-login rows
         _loginDetailItem = item;
+        DetailLogin = login;
         LoginDetailRemember = login.RequestedPersistent;
-        OnPropertyChanged(nameof(DetailLogin));
-        OnPropertyChanged(nameof(HasDetailMap));
-        OnPropertyChanged(nameof(DetailLoginMapUrl));
+        CloseDialogs();
+        ShowLoginDetail = true;
+    }
+
+    /// <summary>Opens the same detail dialog for a login that came from a scanned QR (no list row).</summary>
+    internal void ShowScannedLogin(PendingLoginSession login)
+    {
+        _loginDetailItem = null;
+        DetailLogin = login;
+        LoginDetailRemember = login.RequestedPersistent;
         CloseDialogs();
         ShowLoginDetail = true;
     }
@@ -337,13 +351,13 @@ public partial class MainViewModel
 
     private async Task RespondFromDetail(bool accept)
     {
-        if (_loginDetailItem is { LoginSession: { } login } item)
-            await RespondToLoginAsync(item, login, accept, LoginDetailRemember);
+        if (DetailLogin is { } login)
+            await RespondToLoginAsync(_loginDetailItem, login, accept, LoginDetailRemember);
     }
 
-    /// <summary>Approves or denies a login and, on success, drops it from the list and closes the detail
-    /// dialog if it was open. <paramref name="persistent"/> chooses "stay signed in" vs one-session.</summary>
-    private async Task RespondToLoginAsync(ConfirmationItem item, PendingLoginSession login, bool accept, bool persistent)
+    /// <summary>Approves or denies a login and, on success, drops its list row (if any) and closes the
+    /// detail dialog. <paramref name="persistent"/> chooses "stay signed in" vs one-session.</summary>
+    private async Task RespondToLoginAsync(ConfirmationItem? item, PendingLoginSession login, bool accept, bool persistent)
     {
         if (SelectedAccount is not { IsReal: true } acc) return;
         ConfirmationsBusy = true;
@@ -358,8 +372,9 @@ public partial class MainViewModel
             var ok = await _loginApproval.RespondAsync(steamId, token, acc.SharedSecret, login, accept, persistent);
             if (ok)
             {
-                RemoveConfirmation(item, acc);
-                if (ShowLoginDetail) { ShowLoginDetail = false; _loginDetailItem = null; }
+                if (item is not null) RemoveConfirmation(item, acc);
+                if (ShowLoginDetail) { ShowLoginDetail = false; _loginDetailItem = null; DetailLogin = null; }
+                if (accept) ShowToast(Loc.T("Login_Approved"), ToastKind.Success);
             }
             else ConfirmationsStatus = Loc.T("Confirm_StatusRejected");
         }

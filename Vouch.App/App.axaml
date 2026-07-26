@@ -14,6 +14,7 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceInclude Source="avares://Vouch/Themes/Palette.axaml" />
+                <ResourceInclude Source="avares://Vouch/Assets/Icons.axaml" />
             </ResourceDictionary.MergedDictionaries>
             <conv:SubtractConverter x:Key="Subtract" />
         </ResourceDictionary>
@@ -22,8 +23,19 @@
     <Application.Styles>
         <FluentTheme />
 
-        <!-- Restyle MenuFlyout (the "Add account" menu) to match the app: rounded dark card,
-             soft shadow, and a short fade+slide-up on open. -->
+        <!-- vector icon defaults (see Assets/Icons.axaml). Size via Width/Height, colour via Fill. -->
+        <Style Selector="Path.icon">
+            <Setter Property="Stretch" Value="Uniform" />
+            <Setter Property="Width" Value="15" />
+            <Setter Property="Height" Value="15" />
+            <Setter Property="Fill" Value="{DynamicResource TextHi}" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+        </Style>
+
+        <!-- Restyle MenuFlyout to match the app: rounded dark card + soft shadow. The open animation
+             is split by direction: upward menus (default, e.g. "Add account") slide up; a menu tagged
+             with the "qrdrop" presenter class (the QR sign-in menu, which opens downward) slides down. -->
         <Style Selector="MenuFlyoutPresenter">
             <Setter Property="Background" Value="{DynamicResource Card}" />
             <Setter Property="BorderBrush" Value="{DynamicResource Stroke}" />
@@ -34,11 +46,27 @@
             <Setter Property="RenderTransform">
                 <TranslateTransform />
             </Setter>
+        </Style>
+        <Style Selector="MenuFlyoutPresenter:not(.qrdrop)">
             <Style.Animations>
                 <Animation Duration="0:0:0.15" Easing="CubicEaseOut" FillMode="Forward">
                     <KeyFrame Cue="0%">
                         <Setter Property="Opacity" Value="0" />
                         <Setter Property="TranslateTransform.Y" Value="10" />
+                    </KeyFrame>
+                    <KeyFrame Cue="100%">
+                        <Setter Property="Opacity" Value="1" />
+                        <Setter Property="TranslateTransform.Y" Value="0" />
+                    </KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+        <Style Selector="MenuFlyoutPresenter.qrdrop">
+            <Style.Animations>
+                <Animation Duration="0:0:0.15" Easing="CubicEaseOut" FillMode="Forward">
+                    <KeyFrame Cue="0%">
+                        <Setter Property="Opacity" Value="0" />
+                        <Setter Property="TranslateTransform.Y" Value="-12" />
                     </KeyFrame>
                     <KeyFrame Cue="100%">
                         <Setter Property="Opacity" Value="1" />

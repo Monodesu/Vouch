@@ -193,7 +193,13 @@
                 <Button Grid.Column="1" Classes="pill" Margin="8,0,0,0"
                         Command="{Binding OpenSettingsCommand}"
                         Background="{DynamicResource Card}" Foreground="{DynamicResource TextLo}"
-                        Content="⚙" FontSize="15" ToolTip.Tip="{loc:T Settings_Title}" />
+                        ToolTip.Tip="{loc:T Settings_Title}">
+                    <Viewbox Width="17" Height="17">
+                        <Canvas Width="24" Height="24">
+                            <Path Data="{StaticResource Ico_Gear}" Fill="{DynamicResource TextHi}" />
+                        </Canvas>
+                    </Viewbox>
+                </Button>
             </Grid>
         </Grid>
     </Border>

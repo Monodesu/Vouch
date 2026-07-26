@@ -14,8 +14,14 @@
         <Grid RowDefinitions="Auto,*">
             <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,16">
                 <TextBlock Classes="dlgTitle" Text="{loc:T Settings_Title}" VerticalAlignment="Center" />
-                <Button Grid.Column="1" Content="✕" Background="Transparent"
-                        Foreground="{DynamicResource TextLo}" Command="{Binding CloseDialogsCommand}" />
+                <Button Grid.Column="1" Background="Transparent"
+                        Foreground="{DynamicResource TextLo}" Command="{Binding CloseDialogsCommand}">
+                    <Viewbox Width="15" Height="15">
+                        <Canvas Width="24" Height="24">
+                            <Path Data="{StaticResource Ico_Close}" Fill="{DynamicResource TextLo}" />
+                        </Canvas>
+                    </Viewbox>
+                </Button>
             </Grid>
             <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                 <StackPanel Spacing="16" Margin="0,0,18,0">
@@ -88,25 +94,21 @@
             </StackPanel>
 
             <StackPanel Spacing="6">
-                <Grid ColumnDefinitions="Auto,*">
-                    <TextBlock Grid.Column="0" Classes="dlgLabel" Text="{loc:T Settings_ApiKey}" VerticalAlignment="Center" />
-                    <Button Grid.Column="1" Classes="rowlink" HorizontalAlignment="Left" Margin="10,0,0,0"
-                            Command="{Binding OpenLinkCommand}" CommandParameter="https://steamcommunity.com/dev/apikey">
-                        <TextBlock Text="{loc:T Settings_GetApiKey}" Foreground="{DynamicResource Accent}" FontSize="11" />
-                    </Button>
-                </Grid>
+                <TextBlock Classes="dlgLabel" Text="{loc:T Settings_ApiKey}" />
+                <Button Classes="rowlink" HorizontalAlignment="Left"
+                        Command="{Binding OpenLinkCommand}" CommandParameter="https://steamcommunity.com/dev/apikey">
+                    <TextBlock Text="{loc:T Settings_GetApiKey}" Foreground="{DynamicResource Accent}" FontSize="11" />
+                </Button>
                 <TextBox Text="{Binding ApiKey}" PasswordChar="•"
                          PlaceholderText="steamcommunity.com/dev/apikey" />
             </StackPanel>
 
             <StackPanel Spacing="6">
-                <Grid ColumnDefinitions="Auto,*">
-                    <TextBlock Grid.Column="0" Classes="dlgLabel" Text="{loc:T Settings_TradeUrl}" VerticalAlignment="Center" />
-                    <Button Grid.Column="1" Classes="rowlink" HorizontalAlignment="Left" Margin="10,0,0,0"
-                            Command="{Binding OpenLinkCommand}" CommandParameter="https://steamcommunity.com/my/tradeoffers/privacy">
-                        <TextBlock Text="{loc:T Settings_GetTradeUrl}" Foreground="{DynamicResource Accent}" FontSize="11" />
-                    </Button>
-                </Grid>
+                <TextBlock Classes="dlgLabel" Text="{loc:T Settings_TradeUrl}" />
+                <Button Classes="rowlink" HorizontalAlignment="Left"
+                        Command="{Binding OpenLinkCommand}" CommandParameter="https://steamcommunity.com/my/tradeoffers/privacy">
+                    <TextBlock Text="{loc:T Settings_GetTradeUrl}" Foreground="{DynamicResource Accent}" FontSize="11" />
+                </Button>
                 <TextBox Text="{Binding TradeUrl}"
                          PlaceholderText="steamcommunity.com/tradeoffer/new/?partner=…&amp;token=…" />
             </StackPanel>

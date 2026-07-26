@@ -252,7 +252,11 @@
         <!-- empty state (no accounts) -->
         <StackPanel Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center"
                     Spacing="8" IsVisible="{Binding !HasSelection}">
-            <TextBlock Text="🛡" FontSize="46" HorizontalAlignment="Center" />
+            <Viewbox Width="54" Height="54" HorizontalAlignment="Center">
+                <Canvas Width="24" Height="24">
+                    <Path Data="{StaticResource Ico_Shield}" Fill="{DynamicResource TextLo}" />
+                </Canvas>
+            </Viewbox>
             <TextBlock Text="{loc:T Empty_Title}" FontSize="20" FontWeight="SemiBold"
                        Foreground="{DynamicResource TextHi}" HorizontalAlignment="Center" />
             <TextBlock Text="{loc:T Empty_Sub}"
@@ -368,14 +372,26 @@
                 BoxShadow="0 8 24 0 #40000000">
             <Grid RowDefinitions="Auto,Auto">
                 <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="11" VerticalAlignment="Center">
-                    <TextBlock Text="✓" FontSize="15" VerticalAlignment="Center"
-                               Foreground="{DynamicResource Good}" IsVisible="{Binding !ToastIsError}" />
-                    <TextBlock Text="✕" FontSize="15" VerticalAlignment="Center"
-                               Foreground="{DynamicResource Bad}" IsVisible="{Binding ToastIsError}" />
+                    <Viewbox Width="20" Height="20" VerticalAlignment="Center" IsVisible="{Binding !ToastIsError}">
+                        <Canvas Width="24" Height="24">
+                            <Path Data="{StaticResource Ico_Check}" Fill="{DynamicResource Good}" />
+                        </Canvas>
+                    </Viewbox>
+                    <Viewbox Width="20" Height="20" VerticalAlignment="Center" IsVisible="{Binding ToastIsError}">
+                        <Canvas Width="24" Height="24">
+                            <Path Data="{StaticResource Ico_Close}" Fill="{DynamicResource Bad}" />
+                        </Canvas>
+                    </Viewbox>
                     <TextBlock Text="{Binding ToastMessage}" TextWrapping="Wrap" VerticalAlignment="Center"
                                Foreground="{DynamicResource TextHi}" FontSize="13" MaxWidth="290" />
-                    <Button Command="{Binding DismissToastCommand}" Content="✕" FontSize="12" Padding="6,2"
-                            Background="Transparent" Foreground="{DynamicResource TextLo}" VerticalAlignment="Center" />
+                    <Button Command="{Binding DismissToastCommand}" Padding="6,2"
+                            Background="Transparent" VerticalAlignment="Center">
+                        <Viewbox Width="14" Height="14">
+                            <Canvas Width="24" Height="24">
+                                <Path Data="{StaticResource Ico_Close}" Fill="{DynamicResource TextLo}" />
+                            </Canvas>
+                        </Viewbox>
+                    </Button>
                 </StackPanel>
                 <!-- countdown bar: shrinks as the toast times out; hovering refills + pauses it -->
                 <Border Grid.Row="1" Height="3" Margin="0,11,0,0" CornerRadius="2" ClipToBounds="True"

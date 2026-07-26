@@ -103,14 +103,32 @@ public sealed partial class NotificationItem : ObservableObject
     public NotificationItem(SteamNotification n) { N = n; _read = n.Read; }
 
     public string Id => N.Id;
+    public ulong SenderId => N.SenderId;
+    public string? Url => N.Url;
+    public bool HasUrl => !string.IsNullOrEmpty(N.Url);
+
     [ObservableProperty] private bool _read;
     public bool Unread => !Read;
     partial void OnReadChanged(bool value) => OnPropertyChanged(nameof(Unread));
 
-    public string TypeName => N.TypeName;
+    // Persona of the other party, resolved lazily from SenderId after the list loads.
+    [ObservableProperty] private string? _persona;
+    partial void OnPersonaChanged(string? value) => OnPropertyChanged(nameof(Subtitle));
+
+    /// <summary>Localized kind label: "Comment", "Trade offer", …</summary>
+    public string Title => N.Kind switch
+    {
+        "tradeoffer" => Loc.T("Notif_KindTradeOffer"),
+        "comment" => Loc.T("Notif_KindComment"),
+        _ => Loc.T("Notif_KindOther"),
+    };
+
     public string When => N.Timestamp <= 0
         ? ""
         : DateTimeOffset.FromUnixTimeSeconds(N.Timestamp).LocalDateTime.ToString("yyyy-MM-dd HH:mm");
+
+    /// <summary>"Persona · time", or just the time until the persona resolves.</summary>
+    public string Subtitle => string.IsNullOrEmpty(Persona) ? When : $"{Persona} · {When}";
 }
 
 /// <summary>
@@ -181,13 +199,15 @@ public partial class MainViewModel
         get { int c = 0; foreach (var n in Notifications) if (n.Unread) c++; return c; }
     }
     public bool HasUnreadNotifications => NotificationsUnread > 0;
+    public bool NotificationsHasAny => Notifications.Count > 0;
 
-    /// <summary>Raise after any change to notifications' read state so both the count and the
-    /// "any unread?" flag (which gates the Mark-all-read button) refresh together.</summary>
+    /// <summary>Raise after any change to notifications' read state so the count, the "any unread?" flag
+    /// (Mark-all-read button) and the "any at all?" flag (badge) refresh together.</summary>
     private void NotifyUnreadChanged()
     {
         OnPropertyChanged(nameof(NotificationsUnread));
         OnPropertyChanged(nameof(HasUnreadNotifications));
+        OnPropertyChanged(nameof(NotificationsHasAny));
     }
 
     // ---- trade offers ----
@@ -380,7 +400,8 @@ public partial class MainViewModel
             Notifications.Clear();
             foreach (var n in items) Notifications.Add(new NotificationItem(n));
             NotifyUnreadChanged();
-            NotificationsStatus = items.Count == 0 ? Loc.T("Notif_None") : "";
+            NotificationsStatus = Notifications.Count == 0 ? Loc.T("Notif_None") : "";
+            _ = ResolveNotificationPersonasAsync(Notifications.ToList()); // fill in "who" in the background
         }
         catch (Exception)
         {
@@ -398,6 +419,34 @@ public partial class MainViewModel
         {
             item.Read = true;
             NotifyUnreadChanged();
+        }
+    }
+
+    /// <summary>Opens a notification's target page (trade offer / commenter profile) in the browser.</summary>
+    [RelayCommand]
+    private async Task OpenNotification(NotificationItem? item)
+    {
+        if (item?.Url is { Length: > 0 } url && OpenUrl is not null) await OpenUrl(url);
+    }
+
+    /// <summary>Resolves each notification's sender persona (cached), so rows show "who" not a bare time.</summary>
+    private async Task ResolveNotificationPersonasAsync(IReadOnlyList<NotificationItem> items)
+    {
+        var seen = new Dictionary<ulong, string?>();
+        foreach (var item in items)
+        {
+            var id = item.SenderId;
+            if (id == 0) continue;
+            if (!seen.TryGetValue(id, out var persona))
+            {
+                persona = _profileCache.Load(id).Profile?.PersonaName;
+                if (string.IsNullOrEmpty(persona))
+                {
+                    try { persona = (await _steam.FetchProfileAsync(id))?.PersonaName; } catch { persona = null; }
+                }
+                seen[id] = persona;
+            }
+            if (!string.IsNullOrEmpty(persona)) item.Persona = persona;
         }
     }
 

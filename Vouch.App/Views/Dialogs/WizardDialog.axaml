@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Vouch.App.ViewModels"
+             xmlns:loc="using:Vouch.App.Localization"
              x:Class="Vouch.App.Views.Dialogs.WizardDialog"
              x:DataType="vm:MainViewModel">
 
@@ -10,29 +11,35 @@
         <StackPanel Spacing="16" Margin="0,0,8,0">
             <Grid ColumnDefinitions="*,Auto">
                 <StackPanel>
-                    <TextBlock Classes="dlgTitle" Text="Set up new authenticator" />
-                    <TextBlock Text="Links this app as your Steam Guard. Steam sends a code to finish — by email if the account has no phone, or by SMS if it does."
+                    <TextBlock Classes="dlgTitle" Text="{loc:T Wizard_Title}" />
+                    <TextBlock Text="{loc:T Wizard_Intro}"
                                Foreground="{DynamicResource TextLo}" FontSize="12" TextWrapping="Wrap" />
                 </StackPanel>
-                <Button Grid.Column="1" Content="✕" Background="Transparent"
+                <Button Grid.Column="1" Background="Transparent"
                         Foreground="{DynamicResource TextLo}" VerticalAlignment="Top"
-                        Command="{Binding CloseDialogsCommand}" />
+                        Command="{Binding CloseDialogsCommand}">
+                    <Viewbox Width="15" Height="15">
+                        <Canvas Width="24" Height="24">
+                            <Path Data="{StaticResource Ico_Close}" Fill="{DynamicResource TextLo}" />
+                        </Canvas>
+                    </Viewbox>
+                </Button>
             </Grid>
 
             <!-- step 1: login -->
             <StackPanel Spacing="12" IsVisible="{Binding WizardOnStep1}">
                 <StackPanel Spacing="6">
-                    <TextBlock Classes="dlgLabel" Text="STEAM USERNAME" />
-                    <TextBox Text="{Binding WizardUsername}" PlaceholderText="username" />
+                    <TextBlock Classes="dlgLabel" Text="{loc:T Wizard_Username}" />
+                    <TextBox Text="{Binding WizardUsername}" PlaceholderText="{loc:T Wizard_UsernamePh}" />
                 </StackPanel>
                 <StackPanel Spacing="6">
-                    <TextBlock Classes="dlgLabel" Text="STEAM PASSWORD" />
-                    <TextBox Text="{Binding WizardPassword}" PasswordChar="•" PlaceholderText="password" />
+                    <TextBlock Classes="dlgLabel" Text="{loc:T Wizard_Password}" />
+                    <TextBox Text="{Binding WizardPassword}" PasswordChar="•" PlaceholderText="{loc:T Wizard_PasswordPh}" />
                 </StackPanel>
 
                 <Border Background="{DynamicResource CardHi}" CornerRadius="8" Padding="12,10">
                     <TextBlock Foreground="{DynamicResource TextLo}" FontSize="11.5" TextWrapping="Wrap"
-                               Text="To finish, Steam sends a verification code — to your email if the account has no phone, or by SMS if it does. No phone number is required." />
+                               Text="{loc:T Wizard_LoginHint}" />
                 </Border>
             </StackPanel>
 
@@ -40,21 +47,21 @@
             <StackPanel Spacing="12" IsVisible="{Binding WizardOnStep2}">
                 <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8" IsVisible="{Binding WizardShowSendPhone}">
                     <StackPanel Grid.Column="0" Spacing="6">
-                        <TextBlock Classes="dlgLabel" Text="PHONE NUMBER (INTERNATIONAL)" />
+                        <TextBlock Classes="dlgLabel" Text="{loc:T Wizard_PhoneNumber}" />
                         <TextBox Text="{Binding WizardPhoneNumber}" PlaceholderText="+15551234567" />
                     </StackPanel>
                     <StackPanel Grid.Column="1" Spacing="6" Width="80">
-                        <TextBlock Classes="dlgLabel" Text="COUNTRY" />
+                        <TextBlock Classes="dlgLabel" Text="{loc:T Wizard_Country}" />
                         <TextBox Text="{Binding WizardPhoneCountry}" PlaceholderText="US" />
                     </StackPanel>
                 </Grid>
                 <StackPanel Spacing="6" IsVisible="{Binding WizardShowVerifyPhone}">
-                    <TextBlock Classes="dlgLabel" Text="PHONE VERIFICATION SMS CODE" />
-                    <TextBox Text="{Binding WizardPhoneSmsCode}" PlaceholderText="code Steam texted your phone" />
+                    <TextBlock Classes="dlgLabel" Text="{loc:T Wizard_PhoneSms}" />
+                    <TextBox Text="{Binding WizardPhoneSmsCode}" PlaceholderText="{loc:T Wizard_PhoneSmsPh}" />
                 </StackPanel>
                 <Border Background="{DynamicResource CardHi}" CornerRadius="8" Padding="12,10">
                     <TextBlock Foreground="{DynamicResource TextLo}" FontSize="11.5" TextWrapping="Wrap"
-                               Text="No phone on this account. Steam emails a confirmation link, then texts a code to verify the number. (One phone can be used on several accounts; you'll enter two SMS codes total — one for the phone, one for the authenticator.)" />
+                               Text="{loc:T Wizard_PhoneHint}" />
                 </Border>
             </StackPanel>
 
@@ -62,7 +69,7 @@
             <StackPanel Spacing="12" IsVisible="{Binding WizardOnStep3}">
                 <Border Background="{DynamicResource WarnBg}" CornerRadius="8" Padding="12,10">
                     <TextBlock Foreground="{DynamicResource WarnText}" FontSize="12.5" FontWeight="SemiBold" TextWrapping="Wrap"
-                               Text="⚠ Write this revocation code down NOW. It is the ONLY way to remove the authenticator if you lose access to it." />
+                               Text="{loc:T Wizard_RevocationWarn}" />
                 </Border>
                 <Border Background="{DynamicResource InputBg}" CornerRadius="10" Padding="18">
                     <TextBlock Text="{Binding WizardRevocationCode}" HorizontalAlignment="Center"
@@ -70,7 +77,7 @@
                                FontFamily="Cascadia Mono,Consolas,monospace" />
                 </Border>
                 <TextBlock Foreground="{DynamicResource TextLo}" FontSize="11.5" TextWrapping="Wrap"
-                           Text="You'll re-enter this code on the next screen to confirm you saved it." />
+                           Text="{loc:T Wizard_RevocationHint}" />
             </StackPanel>
 
             <TextBlock Text="{Binding WizardStatus}" Foreground="{DynamicResource TextHi}"
@@ -79,39 +86,39 @@
 
             <!-- footer -->
             <Grid ColumnDefinitions="Auto,*,Auto">
-                <Button Grid.Column="0" Classes="ghost" Content="Cancel"
+                <Button Grid.Column="0" Classes="ghost" Content="{loc:T Common_Cancel}"
                         Command="{Binding CloseDialogsCommand}" />
                 <Button Grid.Column="2" Classes="primary" IsVisible="{Binding WizardOnStep1}"
                         Command="{Binding WizardLoginAndAddCommand}">
                     <Panel>
-                        <TextBlock Text="Log in &amp; continue" IsVisible="{Binding !WizardBusy}" />
-                        <TextBlock Text="Working…" IsVisible="{Binding WizardBusy}" />
+                        <TextBlock Text="{loc:T Wizard_LoginContinue}" IsVisible="{Binding !WizardBusy}" />
+                        <TextBlock Text="{loc:T Wizard_Working}" IsVisible="{Binding WizardBusy}" />
                     </Panel>
                 </Button>
                 <!-- step 2: send email (before) / continue (after) -->
                 <Button Grid.Column="2" Classes="primary"
                         IsVisible="{Binding WizardShowSendPhone}" Command="{Binding WizardSendPhoneEmailCommand}">
                     <Panel>
-                        <TextBlock Text="Send confirmation" IsVisible="{Binding !WizardBusy}" />
-                        <TextBlock Text="Sending…" IsVisible="{Binding WizardBusy}" />
+                        <TextBlock Text="{loc:T Wizard_SendConfirmation}" IsVisible="{Binding !WizardBusy}" />
+                        <TextBlock Text="{loc:T Wizard_Sending}" IsVisible="{Binding WizardBusy}" />
                     </Panel>
                 </Button>
                 <Button Grid.Column="2" Classes="primary"
                         IsVisible="{Binding WizardShowContinuePhone}" Command="{Binding WizardContinueAfterEmailCommand}">
                     <Panel>
-                        <TextBlock Text="I clicked it — Continue" IsVisible="{Binding !WizardBusy}" />
-                        <TextBlock Text="Checking…" IsVisible="{Binding WizardBusy}" />
+                        <TextBlock Text="{loc:T Wizard_ClickedContinue}" IsVisible="{Binding !WizardBusy}" />
+                        <TextBlock Text="{loc:T Wizard_Checking}" IsVisible="{Binding WizardBusy}" />
                     </Panel>
                 </Button>
                 <Button Grid.Column="2" Classes="primary"
                         IsVisible="{Binding WizardShowVerifyPhone}" Command="{Binding WizardVerifyPhoneCommand}">
                     <Panel>
-                        <TextBlock Text="Verify phone" IsVisible="{Binding !WizardBusy}" />
-                        <TextBlock Text="Verifying…" IsVisible="{Binding WizardBusy}" />
+                        <TextBlock Text="{loc:T Wizard_VerifyPhone}" IsVisible="{Binding !WizardBusy}" />
+                        <TextBlock Text="{loc:T Wizard_Verifying}" IsVisible="{Binding WizardBusy}" />
                     </Panel>
                 </Button>
                 <Button Grid.Column="2" Classes="primary" IsVisible="{Binding WizardOnStep3}"
-                        Content="Continue" Command="{Binding OpenFinalizePromptCommand}" />
+                        Content="{loc:T Wizard_Continue}" Command="{Binding OpenFinalizePromptCommand}" />
             </Grid>
         </StackPanel>
         </ScrollViewer>

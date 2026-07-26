@@ -18,8 +18,14 @@
                                Foreground="{DynamicResource Accent}" FontSize="11.5" FontWeight="SemiBold"
                                Margin="0,4,0,0" />
                 </StackPanel>
-                <Button Grid.Column="1" Content="✕" Background="Transparent" VerticalAlignment="Top"
-                        Foreground="{DynamicResource TextLo}" Command="{Binding LoginCloseCommand}" />
+                <Button Grid.Column="1" Background="Transparent" VerticalAlignment="Top"
+                        Foreground="{DynamicResource TextLo}" Command="{Binding LoginCloseCommand}">
+                    <Viewbox Width="15" Height="15">
+                        <Canvas Width="24" Height="24">
+                            <Path Data="{StaticResource Ico_Close}" Fill="{DynamicResource TextLo}" />
+                        </Canvas>
+                    </Viewbox>
+                </Button>
             </Grid>
 
             <StackPanel Spacing="6">

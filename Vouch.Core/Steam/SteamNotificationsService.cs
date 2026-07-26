@@ -3,8 +3,12 @@ using System.Text.Json;
 
 namespace Vouch.Core.Steam;
 
-/// <summary>One Steam notification (comment, item, trade offer, gift, …).</summary>
-public record SteamNotification(string Id, int Type, string TypeName, bool Read, long Timestamp);
+/// <summary>One Steam notification (comment, trade offer, …). <paramref name="Kind"/> and
+/// <paramref name="Url"/> are derived from the type-specific body_data so the UI can label it and open
+/// the right page; <paramref name="SenderId"/> is the SteamID64 of the other party (0 if none).</summary>
+public record SteamNotification(
+    string Id, int Type, string TypeName, bool Read, long Timestamp,
+    string Kind, ulong SenderId, string? Url);
 
 /// <summary>
 /// Reads an account's Steam notifications via the access token (ISteamNotificationService — no Web API
@@ -78,16 +82,46 @@ public class SteamNotificationsService
             foreach (var n in arr.EnumerateArray())
             {
                 int type = n.TryGetProperty("notification_type", out var t) && t.ValueKind == JsonValueKind.Number ? t.GetInt32() : 0;
+                var (kind, sender, url) = ParseBody(n.TryGetProperty("body_data", out var bd) ? bd.GetString() : null);
                 list.Add(new SteamNotification(
                     Id: Str(n, "notification_id"),
                     Type: type,
                     TypeName: TypeName(type),
                     Read: n.TryGetProperty("read", out var r) && r.ValueKind == JsonValueKind.True,
-                    Timestamp: n.TryGetProperty("timestamp", out var ts) && ts.ValueKind == JsonValueKind.Number ? ts.GetInt64() : 0));
+                    Timestamp: n.TryGetProperty("timestamp", out var ts) && ts.ValueKind == JsonValueKind.Number ? ts.GetInt64() : 0,
+                    Kind: kind, SenderId: sender, Url: url));
             }
         }
         catch (JsonException) { /* return what we have */ }
         return list;
+    }
+
+    private const ulong SteamId64Base = 76561197960265728UL;
+
+    /// <summary>Derives (kind, senderSteamId64, targetUrl) from a notification's body_data JSON — a
+    /// trade offer carries tradeoffer_id + sender; a comment carries requestor_id.</summary>
+    public static (string Kind, ulong Sender, string? Url) ParseBody(string? bodyJson)
+    {
+        if (string.IsNullOrEmpty(bodyJson)) return ("other", 0, null);
+        try
+        {
+            using var doc = JsonDocument.Parse(bodyJson);
+            var b = doc.RootElement;
+            if (b.TryGetProperty("tradeoffer_id", out var to))
+            {
+                var id = to.ValueKind == JsonValueKind.String ? to.GetString() : to.GetRawText();
+                ulong sender = b.TryGetProperty("sender", out var s) && s.TryGetInt64(out var sv) ? (ulong)sv + SteamId64Base : 0;
+                return ("tradeoffer", sender,
+                    string.IsNullOrEmpty(id) ? null : $"https://steamcommunity.com/tradeoffer/{id}/");
+            }
+            if (b.TryGetProperty("requestor_id", out var rq) && rq.TryGetInt64(out var rv))
+            {
+                ulong sender = (ulong)rv + SteamId64Base;
+                return ("comment", sender, $"https://steamcommunity.com/profiles/{sender}");
+            }
+        }
+        catch (JsonException) { /* fall through */ }
+        return ("other", 0, null);
     }
 
     /// <summary>Friendly label for the known SteamNotificationType values; unknowns fall back to the number.</summary>

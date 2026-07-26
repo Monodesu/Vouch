@@ -10,8 +10,14 @@
         <StackPanel Spacing="14">
             <Grid ColumnDefinitions="*,Auto">
                 <TextBlock Classes="dlgTitle" Text="{Binding GroupDialogTitle}" VerticalAlignment="Center" />
-                <Button Grid.Column="1" Content="✕" Background="Transparent"
-                        Foreground="{DynamicResource TextLo}" Command="{Binding CloseDialogsCommand}" />
+                <Button Grid.Column="1" Background="Transparent"
+                        Foreground="{DynamicResource TextLo}" Command="{Binding CloseDialogsCommand}">
+                    <Viewbox Width="15" Height="15">
+                        <Canvas Width="24" Height="24">
+                            <Path Data="{StaticResource Ico_Close}" Fill="{DynamicResource TextLo}" />
+                        </Canvas>
+                    </Viewbox>
+                </Button>
             </Grid>
 
             <!-- existing groups to pick (only when moving accounts) -->

@@ -11,14 +11,24 @@
         <StackPanel Spacing="16" Margin="0,0,8,0">
             <Grid ColumnDefinitions="*,Auto">
                 <TextBlock Classes="dlgTitle" Text="{loc:T Import_Title}" VerticalAlignment="Center" />
-                <Button Grid.Column="1" Content="✕" Background="Transparent"
-                        Foreground="{DynamicResource TextLo}" Command="{Binding CloseDialogsCommand}" />
+                <Button Grid.Column="1" Background="Transparent"
+                        Foreground="{DynamicResource TextLo}" Command="{Binding CloseDialogsCommand}">
+                    <Viewbox Width="15" Height="15">
+                        <Canvas Width="24" Height="24">
+                            <Path Data="{StaticResource Ico_Close}" Fill="{DynamicResource TextLo}" />
+                        </Canvas>
+                    </Viewbox>
+                </Button>
             </Grid>
             <TextBlock Foreground="{DynamicResource TextLo}" FontSize="13" TextWrapping="Wrap"
                        Text="{loc:T Import_Sub}" />
             <Button Classes="ghost" HorizontalAlignment="Left" Command="{Binding DoImportCommand}">
                 <StackPanel Orientation="Horizontal" Spacing="8">
-                    <TextBlock Text="📂" />
+                    <Viewbox Width="17" Height="17">
+                        <Canvas Width="24" Height="24">
+                            <Path Data="{StaticResource Ico_Folder}" Fill="{DynamicResource TextHi}" />
+                        </Canvas>
+                    </Viewbox>
                     <TextBlock Text="{loc:T Import_ChooseFile}" />
                 </StackPanel>
             </Button>

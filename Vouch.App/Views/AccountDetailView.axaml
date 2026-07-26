@@ -3,10 +3,62 @@
              xmlns:vm="using:Vouch.App.ViewModels"
              xmlns:m="using:Vouch.App.Models"
              xmlns:loc="using:Vouch.App.Localization"
+             xmlns:conv="using:Vouch.App.Converters"
              x:Class="Vouch.App.Views.AccountDetailView"
              x:DataType="vm:MainViewModel">
 
-    <Grid RowDefinitions="Auto,Auto,Auto,*" Margin="28,22,28,20">
+    <UserControl.Resources>
+        <conv:IconGeometryConverter x:Key="IconGeom" />
+    </UserControl.Resources>
+
+    <UserControl.Styles>
+        <!-- revocation card: tucked under the credentials card; slides down on hover (drawer peek) -->
+        <Style Selector="Border.revcard">
+            <Setter Property="RenderTransform" Value="translateY(0px)" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.18" Easing="CubicEaseOut" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Border.revcard.peek:pointerover">
+            <Setter Property="RenderTransform" Value="translateY(6px)" />
+        </Style>
+        <!-- once expanded, hold that same offset so the chevron doesn't jump back up on click -->
+        <Style Selector="Border.revcard.open">
+            <Setter Property="RenderTransform" Value="translateY(6px)" />
+        </Style>
+
+        <!-- revocation section: chevron rotates on expand; content slides + fades open -->
+        <Style Selector="Path#RevChevron">
+            <Setter Property="RenderTransform" Value="rotate(0deg)" />
+            <Setter Property="RenderTransformOrigin" Value="50%,50%" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.18" Easing="CubicEaseOut" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Path#RevChevron.up">
+            <Setter Property="RenderTransform" Value="rotate(180deg)" />
+        </Style>
+        <Style Selector="Border.revcontent">
+            <Setter Property="MaxHeight" Value="0" />
+            <Setter Property="Opacity" Value="0" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <DoubleTransition Property="MaxHeight" Duration="0:0:0.2" Easing="CubicEaseOut" />
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.18" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Border.revcontent.open">
+            <Setter Property="MaxHeight" Value="120" />
+            <Setter Property="Opacity" Value="1" />
+        </Style>
+    </UserControl.Styles>
+
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto,*" Margin="28,22,28,20">
 
         <!-- header -->
         <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto">
@@ -74,7 +126,11 @@
                             Background="{DynamicResource Card}" Foreground="{DynamicResource TextHi}"
                             ToolTip.Tip="{loc:T Detail_SignInTip}">
                         <StackPanel Orientation="Horizontal" Spacing="5">
-                            <TextBlock Text="🔑" FontSize="12" />
+                            <Viewbox Width="15" Height="15">
+                                <Canvas Width="24" Height="24">
+                                    <Path Data="{StaticResource Ico_Key}" Fill="{DynamicResource TextHi}" />
+                                </Canvas>
+                            </Viewbox>
                             <TextBlock Text="{Binding SignInLabel}" FontSize="11.5" />
                         </StackPanel>
                     </Button>
@@ -82,7 +138,11 @@
                             Background="{DynamicResource Card}" Foreground="{DynamicResource TextHi}"
                             ToolTip.Tip="{loc:T Detail_ProfileTip}">
                         <StackPanel Orientation="Horizontal" Spacing="5">
-                            <TextBlock Text="🌐" FontSize="12" />
+                            <Viewbox Width="15" Height="15">
+                                <Canvas Width="24" Height="24">
+                                    <Path Data="{StaticResource Ico_Web}" Fill="{DynamicResource TextHi}" />
+                                </Canvas>
+                            </Viewbox>
                             <TextBlock Text="{loc:T Detail_Profile}" FontSize="11.5" />
                         </StackPanel>
                     </Button>
@@ -91,11 +151,19 @@
                             ToolTip.Tip="{loc:T Detail_UpdateTip}">
                         <Panel>
                             <StackPanel Orientation="Horizontal" Spacing="5" IsVisible="{Binding !IsUpdatingInfo}">
-                                <TextBlock Text="⟳" FontSize="13" />
+                                <Viewbox Width="16" Height="16">
+                                    <Canvas Width="24" Height="24">
+                                        <Path Data="{StaticResource Ico_Refresh}" Fill="{DynamicResource TextHi}" />
+                                    </Canvas>
+                                </Viewbox>
                                 <TextBlock Text="{loc:T Detail_UpdateInfo}" FontSize="11.5" />
                             </StackPanel>
                             <StackPanel Orientation="Horizontal" Spacing="5" IsVisible="{Binding IsUpdatingInfo}">
-                                <TextBlock Text="⟳" FontSize="13" Foreground="{DynamicResource Accent}" />
+                                <Viewbox Width="16" Height="16">
+                                    <Canvas Width="24" Height="24">
+                                        <Path Data="{StaticResource Ico_Refresh}" Fill="{DynamicResource Accent}" />
+                                    </Canvas>
+                                </Viewbox>
                                 <TextBlock Text="{loc:T Detail_Updating}" FontSize="11.5" Foreground="{DynamicResource Accent}" />
                             </StackPanel>
                         </Panel>
@@ -104,8 +172,28 @@
                             Background="{DynamicResource Card}" Foreground="{DynamicResource TextHi}"
                             ToolTip.Tip="{loc:T Detail_TransferTip}">
                         <StackPanel Orientation="Horizontal" Spacing="5">
-                            <TextBlock Text="📦" FontSize="12" />
+                            <Viewbox Width="15" Height="15">
+                                <Canvas Width="24" Height="24">
+                                    <Path Data="{StaticResource Ico_Package}" Fill="{DynamicResource TextHi}" />
+                                </Canvas>
+                            </Viewbox>
                             <TextBlock Text="{loc:T Detail_Transfer}" FontSize="11.5" />
+                        </StackPanel>
+                    </Button>
+                    <Button Classes="pill" Padding="10,7"
+                            Background="{DynamicResource Card}" Foreground="{DynamicResource TextHi}"
+                            ToolTip.Tip="{loc:T Qr_Scan}">
+                        <Button.Flyout>
+                            <MenuFlyout Placement="BottomEdgeAlignedRight" FlyoutPresenterClasses="qrdrop">
+                                <MenuItem Header="{loc:T Qr_FromClipboard}" Command="{Binding ScanQrClipboardCommand}" />
+                                <MenuItem Header="{loc:T Qr_FromScreen}" Command="{Binding ScanQrScreenCommand}" />
+                            </MenuFlyout>
+                        </Button.Flyout>
+                        <StackPanel Orientation="Horizontal" Spacing="5">
+                            <!-- vector QR glyph (a font emoji re-renders/shrinks on first hover) -->
+                            <Path Fill="{DynamicResource TextHi}" Width="12" Height="12" VerticalAlignment="Center"
+                                  Data="M0,0 H5 V5 H0 Z M7,0 H12 V5 H7 Z M0,7 H5 V12 H0 Z M7,7 H9 V9 H7 Z M10,10 H12 V12 H10 Z" />
+                            <TextBlock Text="{loc:T Qr_Scan}" FontSize="11.5" VerticalAlignment="Center" />
                         </StackPanel>
                     </Button>
                 </StackPanel>
@@ -131,12 +219,20 @@
                         <Panel>
                             <StackPanel Orientation="Horizontal" Spacing="8"
                                         IsVisible="{Binding !CodeCopied}">
-                                <TextBlock Text="⧉" FontSize="14" />
+                                <Viewbox Width="17" Height="17">
+                                    <Canvas Width="24" Height="24">
+                                        <Path Data="{StaticResource Ico_Copy}" Fill="{DynamicResource TextHi}" />
+                                    </Canvas>
+                                </Viewbox>
                                 <TextBlock Text="{loc:T Detail_CopyCode}" />
                             </StackPanel>
                             <StackPanel Orientation="Horizontal" Spacing="8"
                                         IsVisible="{Binding CodeCopied}">
-                                <TextBlock Text="✓" FontSize="14" Foreground="{DynamicResource Good}" />
+                                <Viewbox Width="17" Height="17">
+                                    <Canvas Width="24" Height="24">
+                                        <Path Data="{StaticResource Ico_Check}" Fill="{DynamicResource Good}" />
+                                    </Canvas>
+                                </Viewbox>
                                 <TextBlock Text="{loc:T Common_Copied}" Foreground="{DynamicResource Good}" />
                             </StackPanel>
                         </Panel>
@@ -158,8 +254,8 @@
             </Grid>
         </Border>
 
-        <!-- credentials card -->
-        <Border Grid.Row="2" Margin="0,14,0,0" Background="{DynamicResource Card}"
+        <!-- credentials card (sits on top of the revocation card that tucks under it) -->
+        <Border Grid.Row="2" Margin="0,14,0,0" ZIndex="1" Background="{DynamicResource Card}"
                 CornerRadius="16" Padding="22,16">
             <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="90,*,Auto">
                 <!-- username row -->
@@ -173,11 +269,19 @@
                         Padding="10,5" Margin="0,0,0,4" HorizontalAlignment="Right">
                     <Panel>
                         <StackPanel Orientation="Horizontal" Spacing="6" IsVisible="{Binding !UserCopied}">
-                            <TextBlock Text="⧉" FontSize="13" />
+                            <Viewbox Width="16" Height="16">
+                                <Canvas Width="24" Height="24">
+                                    <Path Data="{StaticResource Ico_Copy}" Fill="{DynamicResource TextHi}" />
+                                </Canvas>
+                            </Viewbox>
                             <TextBlock Text="{loc:T Common_Copy}" FontSize="12.5" />
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Spacing="6" IsVisible="{Binding UserCopied}">
-                            <TextBlock Text="✓" FontSize="13" Foreground="{DynamicResource Good}" />
+                            <Viewbox Width="16" Height="16">
+                                <Canvas Width="24" Height="24">
+                                    <Path Data="{StaticResource Ico_Check}" Fill="{DynamicResource Good}" />
+                                </Canvas>
+                            </Viewbox>
                             <TextBlock Text="{loc:T Common_Copied}" FontSize="12.5" Foreground="{DynamicResource Good}" />
                         </StackPanel>
                     </Panel>
@@ -208,8 +312,16 @@
                                 Background="{DynamicResource CardHi}" Foreground="{DynamicResource TextLo}"
                                 Padding="10,5" ToolTip.Tip="{loc:T Detail_ShowHide}">
                             <Panel>
-                                <TextBlock Text="👁" FontSize="13" IsVisible="{Binding !PasswordRevealed}" />
-                                <TextBlock Text="🙈" FontSize="13" IsVisible="{Binding PasswordRevealed}" />
+                                <Viewbox Width="16" Height="16" IsVisible="{Binding !PasswordRevealed}">
+                                    <Canvas Width="24" Height="24">
+                                        <Path Data="{StaticResource Ico_Eye}" Fill="{DynamicResource TextHi}" />
+                                    </Canvas>
+                                </Viewbox>
+                                <Viewbox Width="16" Height="16" IsVisible="{Binding PasswordRevealed}">
+                                    <Canvas Width="24" Height="24">
+                                        <Path Data="{StaticResource Ico_EyeOff}" Fill="{DynamicResource TextHi}" />
+                                    </Canvas>
+                                </Viewbox>
                             </Panel>
                         </Button>
                         <Button Classes="pill" Command="{Binding CopyPasswordCommand}"
@@ -217,11 +329,19 @@
                                 Padding="10,5">
                             <Panel>
                                 <StackPanel Orientation="Horizontal" Spacing="6" IsVisible="{Binding !PassCopied}">
-                                    <TextBlock Text="⧉" FontSize="13" />
+                                    <Viewbox Width="16" Height="16">
+                                        <Canvas Width="24" Height="24">
+                                            <Path Data="{StaticResource Ico_Copy}" Fill="{DynamicResource TextHi}" />
+                                        </Canvas>
+                                    </Viewbox>
                                     <TextBlock Text="{loc:T Common_Copy}" FontSize="12.5" />
                                 </StackPanel>
                                 <StackPanel Orientation="Horizontal" Spacing="6" IsVisible="{Binding PassCopied}">
-                                    <TextBlock Text="✓" FontSize="13" Foreground="{DynamicResource Good}" />
+                                    <Viewbox Width="16" Height="16">
+                                        <Canvas Width="24" Height="24">
+                                            <Path Data="{StaticResource Ico_Check}" Fill="{DynamicResource Good}" />
+                                        </Canvas>
+                                    </Viewbox>
                                     <TextBlock Text="{loc:T Common_Copied}" FontSize="12.5" Foreground="{DynamicResource Good}" />
                                 </StackPanel>
                             </Panel>
@@ -229,7 +349,11 @@
                         <Button Classes="pill" Command="{Binding BeginEditPasswordCommand}"
                                 Background="{DynamicResource CardHi}" Foreground="{DynamicResource TextLo}"
                                 Padding="10,5" ToolTip.Tip="{loc:T Detail_EditPassword}">
-                            <TextBlock Text="✎" FontSize="13" />
+                            <Viewbox Width="16" Height="16">
+                                <Canvas Width="24" Height="24">
+                                    <Path Data="{StaticResource Ico_Pencil}" Fill="{DynamicResource TextHi}" />
+                                </Canvas>
+                            </Viewbox>
                         </Button>
                     </StackPanel>
                     <!-- edit mode: save / cancel -->
@@ -238,22 +362,97 @@
                                 Background="{DynamicResource Accent}" Foreground="{DynamicResource OnAccent}"
                                 Padding="10,5" ToolTip.Tip="{loc:T Common_Save}">
                             <StackPanel Orientation="Horizontal" Spacing="6">
-                                <TextBlock Text="✓" FontSize="13" />
+                                <Viewbox Width="16" Height="16">
+                                    <Canvas Width="24" Height="24">
+                                        <Path Data="{StaticResource Ico_Check}" Fill="{DynamicResource TextHi}" />
+                                    </Canvas>
+                                </Viewbox>
                                 <TextBlock Text="{loc:T Common_Save}" FontSize="12.5" />
                             </StackPanel>
                         </Button>
                         <Button Classes="pill" Command="{Binding CancelEditPasswordCommand}"
                                 Background="{DynamicResource CardHi}" Foreground="{DynamicResource TextLo}"
                                 Padding="10,5" ToolTip.Tip="{loc:T Common_Cancel}">
-                            <TextBlock Text="✕" FontSize="13" />
+                            <Viewbox Width="16" Height="16">
+                                <Canvas Width="24" Height="24">
+                                    <Path Data="{StaticResource Ico_Close}" Fill="{DynamicResource TextHi}" />
+                                </Canvas>
+                            </Viewbox>
                         </Button>
                     </StackPanel>
                 </StackPanel>
             </Grid>
         </Border>
 
+        <!-- revocation code: its own lighter card tucked up under the credentials card (negative top
+             margin = overlap; credentials has the higher ZIndex). The top padding matches the tuck so
+             the chevron sits at the credentials' lower edge; hovering slides the whole card down. -->
+        <Border Grid.Row="3" Classes="revcard" Classes.peek="{Binding !RevocationExpanded}"
+                Classes.open="{Binding RevocationExpanded}"
+                Margin="0,-54,0,0" IsVisible="{Binding HasRevocation}"
+                Background="{DynamicResource CardHi}" CornerRadius="0,0,16,16" ClipToBounds="True">
+            <StackPanel>
+                <Button Classes="rowlink" Command="{Binding ToggleRevocationExpandCommand}"
+                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                        MinHeight="0" Padding="0,56,0,3" FocusAdorner="{x:Null}">
+                        <Path Name="RevChevron" Data="M0,0 L6,0 L3,4 Z" Fill="{DynamicResource TextLo}"
+                              Width="6" Height="4" HorizontalAlignment="Center"
+                              Classes.up="{Binding RevocationExpanded}" />
+                    </Button>
+                    <Border Classes="revcontent" Classes.open="{Binding RevocationExpanded}" ClipToBounds="True">
+                        <Grid Margin="22,0,22,14" ColumnDefinitions="90,*,Auto">
+                            <TextBlock Grid.Column="0" Text="{loc:T Detail_Revocation}" VerticalAlignment="Center"
+                                       Foreground="{DynamicResource TextLo}" FontSize="11" FontWeight="Bold" />
+                            <TextBlock Grid.Column="1" Text="{Binding DisplayRevocation}" VerticalAlignment="Center"
+                                       Foreground="{DynamicResource TextHi}" FontSize="15"
+                                       FontFamily="Cascadia Mono,Consolas,monospace" />
+                                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                    <Button Classes="pill" Command="{Binding ToggleRevocationCommand}"
+                                            Background="{DynamicResource Card}" Foreground="{DynamicResource TextLo}"
+                                            Padding="10,5" ToolTip.Tip="{loc:T Detail_ShowHide}">
+                                        <Panel>
+                                            <Viewbox Width="16" Height="16" IsVisible="{Binding !RevealRevocation}">
+                                                <Canvas Width="24" Height="24">
+                                                    <Path Data="{StaticResource Ico_Eye}" Fill="{DynamicResource TextHi}" />
+                                                </Canvas>
+                                            </Viewbox>
+                                            <Viewbox Width="16" Height="16" IsVisible="{Binding RevealRevocation}">
+                                                <Canvas Width="24" Height="24">
+                                                    <Path Data="{StaticResource Ico_EyeOff}" Fill="{DynamicResource TextHi}" />
+                                                </Canvas>
+                                            </Viewbox>
+                                        </Panel>
+                                    </Button>
+                                    <Button Classes="pill" Command="{Binding CopyRevocationCommand}"
+                                            Background="{DynamicResource Card}" Foreground="{DynamicResource TextHi}"
+                                            Padding="10,5">
+                                        <Panel>
+                                            <StackPanel Orientation="Horizontal" Spacing="6" IsVisible="{Binding !RevoCopied}">
+                                                <Viewbox Width="16" Height="16">
+                                                    <Canvas Width="24" Height="24">
+                                                        <Path Data="{StaticResource Ico_Copy}" Fill="{DynamicResource TextHi}" />
+                                                    </Canvas>
+                                                </Viewbox>
+                                                <TextBlock Text="{loc:T Common_Copy}" FontSize="12.5" />
+                                            </StackPanel>
+                                            <StackPanel Orientation="Horizontal" Spacing="6" IsVisible="{Binding RevoCopied}">
+                                                <Viewbox Width="16" Height="16">
+                                                    <Canvas Width="24" Height="24">
+                                                        <Path Data="{StaticResource Ico_Check}" Fill="{DynamicResource Good}" />
+                                                    </Canvas>
+                                                </Viewbox>
+                                                <TextBlock Text="{loc:T Common_Copied}" FontSize="12.5" Foreground="{DynamicResource Good}" />
+                                            </StackPanel>
+                                        </Panel>
+                                    </Button>
+                                </StackPanel>
+                            </Grid>
+                    </Border>
+                </StackPanel>
+            </Border>
+
         <!-- tabs: confirmations / trade offers / notifications -->
-        <Grid Grid.Row="3" RowDefinitions="Auto,*" Margin="0,20,0,0">
+        <Grid Grid.Row="4" RowDefinitions="Auto,*" Margin="0,20,0,0">
 
             <!-- tab bar + context refresh -->
             <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="2,0,0,12">
@@ -282,8 +481,8 @@
                             Command="{Binding SelectTabCommand}" CommandParameter="2">
                         <StackPanel Orientation="Horizontal" Spacing="7">
                             <TextBlock Text="{loc:T Notif_Title}" />
-                            <Border Background="{DynamicResource Accent}" CornerRadius="9" Padding="7,1" VerticalAlignment="Center">
-                                <TextBlock Text="{Binding Notifications.Count}" Foreground="{DynamicResource OnAccent}"
+                            <Border Background="{DynamicResource CardHi}" CornerRadius="9" Padding="7,1" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding NotificationsUnread}" Foreground="{DynamicResource Accent}"
                                            FontSize="11" FontWeight="Bold" />
                             </Border>
                         </StackPanel>
@@ -294,7 +493,11 @@
                         Background="{DynamicResource Card}" Foreground="{DynamicResource TextHi}"
                         IsVisible="{Binding IsConfTab}" Command="{Binding RefreshConfirmationsCommand}">
                     <StackPanel Orientation="Horizontal" Spacing="7">
-                        <TextBlock Text="⟳" FontSize="13" />
+                        <Viewbox Width="16" Height="16">
+                            <Canvas Width="24" Height="24">
+                                <Path Data="{StaticResource Ico_Refresh}" Fill="{DynamicResource TextHi}" />
+                            </Canvas>
+                        </Viewbox>
                         <TextBlock Text="{loc:T Confirm_Refresh}" FontSize="12" IsVisible="{Binding !ConfirmationsBusy}" />
                         <TextBlock Text="{loc:T Confirm_LoadingShort}" FontSize="12" Foreground="{DynamicResource Accent}"
                                    IsVisible="{Binding ConfirmationsBusy}" />
@@ -304,7 +507,11 @@
                         Background="{DynamicResource Card}" Foreground="{DynamicResource TextHi}"
                         IsVisible="{Binding IsOffersTab}" Command="{Binding RefreshOffersCommand}">
                     <StackPanel Orientation="Horizontal" Spacing="7">
-                        <TextBlock Text="⟳" FontSize="13" />
+                        <Viewbox Width="16" Height="16">
+                            <Canvas Width="24" Height="24">
+                                <Path Data="{StaticResource Ico_Refresh}" Fill="{DynamicResource TextHi}" />
+                            </Canvas>
+                        </Viewbox>
                         <TextBlock Text="{loc:T Confirm_Refresh}" FontSize="12" IsVisible="{Binding !OffersBusy}" />
                         <TextBlock Text="{loc:T Confirm_LoadingShort}" FontSize="12" Foreground="{DynamicResource Accent}"
                                    IsVisible="{Binding OffersBusy}" />
@@ -315,9 +522,13 @@
                     <Button Classes="pill" Padding="10,5"
                             Background="{DynamicResource Card}" Foreground="{DynamicResource TextHi}"
                             Command="{Binding MarkAllNotificationsReadCommand}"
-                            IsVisible="{Binding NotificationsUnread}">
+                            IsVisible="{Binding HasUnreadNotifications}">
                         <StackPanel Orientation="Horizontal" Spacing="7">
-                            <TextBlock Text="✓" FontSize="13" />
+                            <Viewbox Width="16" Height="16">
+                                <Canvas Width="24" Height="24">
+                                    <Path Data="{StaticResource Ico_Check}" Fill="{DynamicResource TextHi}" />
+                                </Canvas>
+                            </Viewbox>
                             <TextBlock Text="{loc:T Notif_MarkAllRead}" FontSize="12" />
                         </StackPanel>
                     </Button>
@@ -325,7 +536,11 @@
                             Background="{DynamicResource Card}" Foreground="{DynamicResource TextHi}"
                             Command="{Binding RefreshNotificationsCommand}">
                         <StackPanel Orientation="Horizontal" Spacing="7">
-                            <TextBlock Text="⟳" FontSize="13" />
+                            <Viewbox Width="16" Height="16">
+                                <Canvas Width="24" Height="24">
+                                    <Path Data="{StaticResource Ico_Refresh}" Fill="{DynamicResource TextHi}" />
+                                </Canvas>
+                            </Viewbox>
                             <TextBlock Text="{loc:T Confirm_Refresh}" FontSize="12" IsVisible="{Binding !NotificationsBusy}" />
                             <TextBlock Text="{loc:T Confirm_LoadingShort}" FontSize="12" Foreground="{DynamicResource Accent}"
                                        IsVisible="{Binding NotificationsBusy}" />
@@ -356,7 +571,11 @@
                                                     CommandParameter="{Binding}">
                                                 <Grid ColumnDefinitions="Auto,*">
                                                     <Border Grid.Column="0" Width="40" Height="40" CornerRadius="10" Background="{DynamicResource CardHi}">
-                                                        <TextBlock Text="{Binding Glyph}" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                        <Viewbox Width="22" Height="22">
+                                                            <Canvas Width="24" Height="24">
+                                                                <Path Data="{Binding Glyph, Converter={StaticResource IconGeom}}" Fill="{DynamicResource TextHi}" />
+                                                            </Canvas>
+                                                        </Viewbox>
                                                     </Border>
                                                     <StackPanel Grid.Column="1" Margin="14,0" VerticalAlignment="Center">
                                                         <TextBlock Text="{Binding Title}" Foreground="{DynamicResource TextHi}" FontSize="13.5" FontWeight="Medium" TextTrimming="CharacterEllipsis" />
@@ -380,7 +599,11 @@
                         </ItemsControl>
                     </ScrollViewer>
                     <StackPanel Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center" IsVisible="{Binding IsEmpty}" Spacing="6">
-                        <TextBlock Text="✓" FontSize="34" Foreground="{DynamicResource AccentDim}" HorizontalAlignment="Center" />
+                        <Viewbox Width="40" Height="40" HorizontalAlignment="Center">
+                            <Canvas Width="24" Height="24">
+                                <Path Data="{StaticResource Ico_Check}" Fill="{DynamicResource AccentDim}" />
+                            </Canvas>
+                        </Viewbox>
                         <TextBlock Text="{loc:T Confirm_Empty}" Foreground="{DynamicResource TextLo}" FontSize="13" HorizontalAlignment="Center" />
                     </StackPanel>
                 </Grid>
@@ -398,7 +621,11 @@
                                     <Border Background="{DynamicResource Card}" CornerRadius="12" Padding="16,12" Margin="0,0,0,10">
                                         <Grid ColumnDefinitions="Auto,*,Auto">
                                             <Border Grid.Column="0" Width="40" Height="40" CornerRadius="10" Background="{DynamicResource CardHi}">
-                                                <TextBlock Text="⇄" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                <Viewbox Width="23" Height="23">
+                                                    <Canvas Width="24" Height="24">
+                                                        <Path Data="{StaticResource Ico_SwapH}" Fill="{DynamicResource TextHi}" />
+                                                    </Canvas>
+                                                </Viewbox>
                                             </Border>
                                             <Button Grid.Column="1" Classes="rowlink" Margin="14,0" VerticalAlignment="Center"
                                                     ToolTip.Tip="{loc:T Offers_ExpandTip}"
@@ -441,10 +668,16 @@
                                         <Grid ColumnDefinitions="Auto,*,Auto">
                                             <Ellipse Grid.Column="0" Width="8" Height="8" VerticalAlignment="Center"
                                                      Fill="{DynamicResource Accent}" IsVisible="{Binding Unread}" />
-                                            <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
-                                                <TextBlock Text="{Binding TypeName}" Foreground="{DynamicResource TextHi}" FontSize="13" />
-                                                <TextBlock Text="{Binding When}" Foreground="{DynamicResource TextLo}" FontSize="11" />
-                                            </StackPanel>
+                                            <!-- clickable when the notification has a target page (opens in browser) -->
+                                            <Button Grid.Column="1" Classes="rowlink" Margin="12,0,0,0" IsEnabled="{Binding HasUrl}"
+                                                    ToolTip.Tip="{loc:T Notif_OpenTip}"
+                                                    Command="{Binding $parent[ItemsControl].((vm:MainViewModel)DataContext).OpenNotificationCommand}"
+                                                    CommandParameter="{Binding}">
+                                                <StackPanel VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding Title}" Foreground="{DynamicResource TextHi}" FontSize="13" />
+                                                    <TextBlock Text="{Binding Subtitle}" Foreground="{DynamicResource TextLo}" FontSize="11" />
+                                                </StackPanel>
+                                            </Button>
                                             <Button Grid.Column="2" Classes="pill" Padding="10,5" VerticalAlignment="Center"
                                                     Background="{DynamicResource CardHi}" Foreground="{DynamicResource TextLo}"
                                                     IsVisible="{Binding Unread}" Content="{loc:T Notif_MarkRead}"

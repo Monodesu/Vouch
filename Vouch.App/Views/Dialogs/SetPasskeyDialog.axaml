@@ -15,8 +15,14 @@
                     <TextBlock Text="{loc:T Passkey_Sub}"
                                Foreground="{DynamicResource TextLo}" FontSize="12" TextWrapping="Wrap" />
                 </StackPanel>
-                <Button Grid.Column="1" Content="✕" Background="Transparent" VerticalAlignment="Top"
-                        Foreground="{DynamicResource TextLo}" Command="{Binding CancelSetPasskeyCommand}" />
+                <Button Grid.Column="1" Background="Transparent" VerticalAlignment="Top"
+                        Foreground="{DynamicResource TextLo}" Command="{Binding CancelSetPasskeyCommand}">
+                    <Viewbox Width="15" Height="15">
+                        <Canvas Width="24" Height="24">
+                            <Path Data="{StaticResource Ico_Close}" Fill="{DynamicResource TextLo}" />
+                        </Canvas>
+                    </Viewbox>
+                </Button>
             </Grid>
 
             <StackPanel Spacing="6">

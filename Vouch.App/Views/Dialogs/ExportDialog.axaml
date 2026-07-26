@@ -11,8 +11,14 @@
         <StackPanel Spacing="16" Margin="0,0,8,0">
             <Grid ColumnDefinitions="*,Auto">
                 <TextBlock Classes="dlgTitle" Text="{loc:T Export_Title}" VerticalAlignment="Center" />
-                <Button Grid.Column="1" Content="✕" Background="Transparent"
-                        Foreground="{DynamicResource TextLo}" Command="{Binding CloseDialogsCommand}" />
+                <Button Grid.Column="1" Background="Transparent"
+                        Foreground="{DynamicResource TextLo}" Command="{Binding CloseDialogsCommand}">
+                    <Viewbox Width="15" Height="15">
+                        <Canvas Width="24" Height="24">
+                            <Path Data="{StaticResource Ico_Close}" Fill="{DynamicResource TextLo}" />
+                        </Canvas>
+                    </Viewbox>
+                </Button>
             </Grid>
             <StackPanel DataContext="{Binding SelectedAccount}" Spacing="2">
                 <TextBlock Classes="dlgLabel" Text="{loc:T Common_AccountLabel}" />
@@ -34,7 +40,11 @@
             </Border>
             <Button Classes="ghost" HorizontalAlignment="Left" Command="{Binding DoExportCommand}">
                 <StackPanel Orientation="Horizontal" Spacing="8">
-                    <TextBlock Text="💾" />
+                    <Viewbox Width="17" Height="17">
+                        <Canvas Width="24" Height="24">
+                            <Path Data="{StaticResource Ico_Save}" Fill="{DynamicResource TextHi}" />
+                        </Canvas>
+                    </Viewbox>
                     <TextBlock Text="{loc:T Export_Button}" />
                 </StackPanel>
             </Button>
