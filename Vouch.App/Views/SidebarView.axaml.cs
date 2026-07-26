@@ -273,6 +273,14 @@ public partial class SidebarView : UserControl
         Vm?.BeginMoveToGroup(BatchTargets());
     }
 
+    private void SyncCs2_Click(object? sender, RoutedEventArgs e)
+    {
+        // the right-clicked / selected account is the source to copy CS2 config from
+        Vm?.BeginCs2Sync(BatchTargets().FirstOrDefault());
+    }
+
+    private void RestoreCs2_Click(object? sender, RoutedEventArgs e) => Vm?.BeginCs2Restore();
+
     private void RenameGroup_Click(object? sender, RoutedEventArgs e)
     {
         if ((sender as Control)?.DataContext is GroupHeader h) Vm?.BeginRenameGroup(h);

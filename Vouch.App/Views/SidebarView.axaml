@@ -37,6 +37,8 @@
             <MenuItem Header="{loc:T Side_TransferSelected}" Click="TransferSelected_Click" />
             <Separator />
             <MenuItem Header="{loc:T Side_MoveToGroup}" Click="MoveToGroup_Click" />
+            <MenuItem Header="{loc:T Side_SyncCs2}" Click="SyncCs2_Click" />
+            <MenuItem Header="{loc:T Side_RestoreCs2}" Click="RestoreCs2_Click" />
             <MenuItem Header="{loc:T Side_ExportSelected}" Click="ExportSelected_Click" />
             <Separator />
             <MenuItem Header="{loc:T Side_DeactivateSelected}" Click="DeactivateSelected_Click" />

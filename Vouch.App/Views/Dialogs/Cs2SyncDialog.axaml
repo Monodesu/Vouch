@@ -1,0 +1,133 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Vouch.App.ViewModels"
+             xmlns:loc="using:Vouch.App.Localization"
+             x:Class="Vouch.App.Views.Dialogs.Cs2SyncDialog"
+             x:DataType="vm:MainViewModel">
+
+    <Border Classes="dialog" Width="500" IsVisible="{Binding ShowCs2Sync}"
+            MaxHeight="{Binding $parent[Panel].Bounds.Height, Converter={StaticResource Subtract}, ConverterParameter=72}">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Spacing="14" Margin="0,0,8,0">
+
+            <Grid ColumnDefinitions="*,Auto">
+                <StackPanel>
+                    <TextBlock Classes="dlgTitle" Text="{loc:T Cs2_Title}" IsVisible="{Binding !Cs2RestoreMode}" />
+                    <TextBlock Classes="dlgTitle" Text="{loc:T Cs2_RestoreTitle}" IsVisible="{Binding Cs2RestoreMode}" />
+                    <TextBlock Text="{Binding Cs2SourceName}" Foreground="{DynamicResource Accent}"
+                               FontSize="12.5" FontWeight="SemiBold" IsVisible="{Binding !Cs2RestoreMode}" />
+                </StackPanel>
+                <Button Grid.Column="1" Background="Transparent" VerticalAlignment="Top"
+                        Command="{Binding CloseDialogsCommand}">
+                    <Viewbox Width="15" Height="15"><Canvas Width="24" Height="24">
+                        <Path Data="{StaticResource Ico_Close}" Fill="{DynamicResource TextLo}" /></Canvas></Viewbox>
+                </Button>
+            </Grid>
+
+            <!-- ============ RESTORE MODE ============ -->
+            <StackPanel Spacing="12" IsVisible="{Binding Cs2RestoreMode}">
+                <TextBlock Text="{loc:T Cs2_RestoreSub}" Foreground="{DynamicResource TextLo}" FontSize="12.5" TextWrapping="Wrap" />
+                <TextBlock Text="{loc:T Cs2_NoBackups}" Foreground="{DynamicResource TextLo}" FontSize="12.5"
+                           IsVisible="{Binding !Cs2HasBackups}" />
+                <StackPanel Spacing="6" IsVisible="{Binding Cs2HasBackups}">
+                    <TextBlock Classes="dlgLabel" Text="{loc:T Cs2_Backups}" />
+                    <ComboBox HorizontalAlignment="Stretch" ItemsSource="{Binding Cs2BackupList}"
+                              SelectedItem="{Binding Cs2SelectedBackup}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate x:DataType="vm:Cs2BackupOption"><TextBlock Text="{Binding Display}" /></DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <Border Background="{DynamicResource InputBg}" CornerRadius="8" Padding="6" MaxHeight="200" MinHeight="56">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <ItemsControl ItemsSource="{Binding Cs2RestoreTargets}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:Cs2RestoreItem">
+                                        <CheckBox IsChecked="{Binding IsSelected}" Content="{Binding Display}"
+                                                  Foreground="{DynamicResource TextHi}" Margin="2,1" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </Border>
+                </StackPanel>
+                <TextBlock Text="{Binding Cs2Status}" Foreground="{DynamicResource TextHi}" FontSize="12" TextWrapping="Wrap"
+                           IsVisible="{Binding Cs2Status, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+                    <Button Classes="ghost" Content="{loc:T Common_Cancel}" Command="{Binding CloseDialogsCommand}" />
+                    <Button Classes="primary" Content="{loc:T Cs2_RestoreRun}" IsVisible="{Binding Cs2HasBackups}"
+                            Command="{Binding RunCs2RestoreCommand}" />
+                </StackPanel>
+            </StackPanel>
+
+            <!-- ============ SYNC MODE ============ -->
+            <StackPanel Spacing="14" IsVisible="{Binding !Cs2RestoreMode}">
+            <TextBlock Text="{loc:T Cs2_Sub}" Foreground="{DynamicResource TextLo}" FontSize="12.5" TextWrapping="Wrap" />
+
+            <!-- what to sync -->
+            <StackPanel Spacing="4">
+                <TextBlock Classes="dlgLabel" Text="{loc:T Cs2_Parts}" />
+                <CheckBox IsChecked="{Binding Cs2Settings}" IsEnabled="{Binding Cs2SettingsAvailable}"
+                          Content="{loc:T Cs2_PartSettings}" Foreground="{DynamicResource TextHi}" />
+                <CheckBox IsChecked="{Binding Cs2Keys}" IsEnabled="{Binding Cs2KeysAvailable}"
+                          Content="{loc:T Cs2_PartKeys}" Foreground="{DynamicResource TextHi}" />
+                <CheckBox IsChecked="{Binding Cs2Video}" IsEnabled="{Binding Cs2VideoAvailable}"
+                          Content="{loc:T Cs2_PartVideo}" Foreground="{DynamicResource TextHi}" />
+                <TextBlock Text="{loc:T Cs2_VideoHint}" Foreground="{DynamicResource TextLo}" FontSize="11" Margin="26,0,0,0" TextWrapping="Wrap" />
+            </StackPanel>
+
+            <!-- targets -->
+            <StackPanel Spacing="6">
+                <Grid ColumnDefinitions="*,Auto">
+                    <TextBlock Classes="dlgLabel" Text="{loc:T Cs2_Targets}" VerticalAlignment="Center" />
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                        <Button Classes="ghost" Padding="8,3" FontSize="11.5" Content="{loc:T Cs2_All}" Command="{Binding Cs2SelectAllCommand}" />
+                        <Button Classes="ghost" Padding="8,3" FontSize="11.5" Content="{loc:T Cs2_None}" Command="{Binding Cs2SelectNoneCommand}" />
+                    </StackPanel>
+                </Grid>
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8" IsVisible="{Binding Cs2HasGroups}">
+                    <ComboBox x:Name="GrpBox" Grid.Column="0" HorizontalAlignment="Stretch"
+                              ItemsSource="{Binding Cs2GroupOptions}" PlaceholderText="{loc:T Cs2_PickGroup}" />
+                    <Button Grid.Column="1" Classes="ghost" Content="{loc:T Cs2_SelectGroup}"
+                            Command="{Binding Cs2SelectGroupCommand}" CommandParameter="{Binding #GrpBox.SelectedItem}" />
+                </Grid>
+                <Border Background="{DynamicResource InputBg}" CornerRadius="8" Padding="6" MaxHeight="220" MinHeight="56">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <ItemsControl ItemsSource="{Binding Cs2Targets}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:Cs2TargetItem">
+                                    <CheckBox IsChecked="{Binding IsSelected}" Foreground="{DynamicResource TextHi}" Margin="2,1">
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <TextBlock Text="{Binding Persona}" VerticalAlignment="Center" />
+                                            <Border Background="{DynamicResource CardHi}" CornerRadius="6" Padding="6,1" VerticalAlignment="Center"
+                                                    IsVisible="{Binding !HasCs2}">
+                                                <TextBlock Text="{loc:T Cs2_WillCreate}" Foreground="{DynamicResource TextLo}" FontSize="10.5" />
+                                            </Border>
+                                        </StackPanel>
+                                    </CheckBox>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Border>
+            </StackPanel>
+
+            <CheckBox IsChecked="{Binding Cs2Backup}" Content="{loc:T Cs2_Backup}" Foreground="{DynamicResource TextHi}" />
+
+            <Border Background="{DynamicResource WarnBg}" CornerRadius="8" Padding="12,10">
+                <TextBlock Text="{loc:T Cs2_Warn}" Foreground="{DynamicResource WarnText}" FontSize="12" TextWrapping="Wrap" />
+            </Border>
+
+            <TextBlock Text="{Binding Cs2Status}" Foreground="{DynamicResource TextHi}" FontSize="12" TextWrapping="Wrap"
+                       IsVisible="{Binding Cs2Status, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+
+            <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+                <Button Classes="ghost" Content="{loc:T Common_Cancel}" Command="{Binding CloseDialogsCommand}" />
+                <Button Classes="primary" Content="{loc:T Cs2_Run}" Command="{Binding RunCs2SyncCommand}" />
+            </StackPanel>
+            </StackPanel>
+            <!-- /SYNC MODE -->
+
+        </StackPanel>
+        </ScrollViewer>
+    </Border>
+</UserControl>

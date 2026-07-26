@@ -284,6 +284,7 @@
                 <dialogs:TransferDialog />
                 <dialogs:OfferDetailsDialog />
                 <dialogs:LoginDetailDialog />
+                <dialogs:Cs2SyncDialog />
                 <dialogs:EmailCodeDialog />
                 <dialogs:FinalizeDialog />
                 <dialogs:DeactivateDialog />

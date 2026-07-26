@@ -28,7 +28,7 @@ public partial class MainViewModel
     [ObservableProperty] private bool _showOfferDetails;
     [ObservableProperty] private bool _showDeactivate;
 
-    public bool AnyDialogOpen => ShowSettings || ShowWizard || ShowImport || ShowExport || ShowLogin || ShowRemove || ShowSetPasskey || ShowBatchRemove || ShowTransfer || ShowOfferDetails || ShowDeactivate || ShowGroupPicker || ShowLoginDetail;
+    public bool AnyDialogOpen => ShowSettings || ShowWizard || ShowImport || ShowExport || ShowLogin || ShowRemove || ShowSetPasskey || ShowBatchRemove || ShowTransfer || ShowOfferDetails || ShowDeactivate || ShowGroupPicker || ShowLoginDetail || ShowCs2Sync;
 
     partial void OnShowSettingsChanged(bool value) => OnPropertyChanged(nameof(AnyDialogOpen));
     partial void OnShowWizardChanged(bool value)
@@ -47,10 +47,11 @@ public partial class MainViewModel
     partial void OnShowDeactivateChanged(bool value) => OnPropertyChanged(nameof(AnyDialogOpen));
     partial void OnShowGroupPickerChanged(bool value) => OnPropertyChanged(nameof(AnyDialogOpen));
     partial void OnShowLoginDetailChanged(bool value) => OnPropertyChanged(nameof(AnyDialogOpen));
+    partial void OnShowCs2SyncChanged(bool value) => OnPropertyChanged(nameof(AnyDialogOpen));
 
     [RelayCommand]
     private void CloseDialogs()
     {
-        ShowSettings = ShowWizard = ShowImport = ShowExport = ShowLogin = ShowRemove = ShowSetPasskey = ShowBatchRemove = ShowTransfer = ShowOfferDetails = ShowDeactivate = ShowGroupPicker = ShowLoginDetail = false;
+        ShowSettings = ShowWizard = ShowImport = ShowExport = ShowLogin = ShowRemove = ShowSetPasskey = ShowBatchRemove = ShowTransfer = ShowOfferDetails = ShowDeactivate = ShowGroupPicker = ShowLoginDetail = ShowCs2Sync = false;
     }
 }
