@@ -8,8 +8,9 @@ reimplementation of the unmaintained
 built on Avalonia with a clean multi-account UI.
 
 Manage many Steam accounts, generate login codes, approve trade/market
-confirmations, review and answer trade offers, transfer inventory, and link or
-unlink authenticators — all from one app.
+confirmations, review and answer trade offers, browse and transfer inventory,
+approve sign-ins, manage an account's logged-in devices, and link or unlink
+authenticators — all from one app.
 
 - **Stack:** Avalonia 12 (Fluent) · .NET 10 · CommunityToolkit.Mvvm · SteamKit2 for login + direct HTTP to Steam
 - **Platforms:** Windows (primary), Linux, macOS
@@ -46,18 +47,25 @@ downloading only from the official repo matters just as much.
 ## Features
 
 ### Accounts
-- Multi-account sidebar with **search**, **multi-select**, and **drag-to-reorder**
+- Multi-account sidebar with **search**, **multi-select**, and **drag-to-reorder** (across groups too)
 - **Groups**: organize accounts into collapsible groups (right-click → move to /
   new group), with a default group for the rest — order and collapsed state persist
 - Live **TOTP login code** with a countdown ring; one-click copy
-- Copy username / password; edit a stored password inline
+- Copy username / password; edit a stored password inline; free-text **per-account note** (kept in the maFile)
 - Avatar, persona name, and Steam **level / bans** (VAC · game · trade)
+- At-a-glance **session status** — signed in / expired / never signed in — shown as a sidebar stripe, an avatar ring, and a label
 
 ### Sign in
 - Sign in with the stored password (prompts only when missing/wrong)
 - **Re-Sign in** shown when a valid session still exists
 - Email Steam Guard codes handled in a dedicated dialog
 - **Batch sign-in / update-info** across a selection
+- **Approve sign-ins from Vouch** — a login started elsewhere (no code entered) can be **approved or denied** here, mobile-app style
+- **QR sign-in** — approve a Steam login QR read from the clipboard or a full-screen capture
+
+### Devices
+- **Logged-in devices**: list an account's active login sessions and **sign out** any one of them
+- **Sign out of all devices** for one account or a whole selection, optionally signing Vouch back in afterward
 
 ### Confirmations & offers
 - Trade/market **confirmations**: accept / deny, individually or in batch
@@ -68,17 +76,20 @@ downloading only from the official repo matters just as much.
   friendship — then **accept / decline / cancel**
 - **Notifications** list with mark-read / mark-all-read
 
-### Inventory transfer
-- Send an account's tradable items to a configured trade link — **all items** or a
-  **hand-picked** selection (with item images), one offer per game
-- Preset games (CS2, TF2, Dota 2, Rust, Steam) plus a **custom appid**
-- Confirms the resulting offer on mobile automatically
+### Inventory
+- **Inventory viewer**: browse an account's items in-app — only the games that actually hold items (like Steam's own dropdown), with icons and counts
+- **Transfer**: send an account's tradable items to a configured trade link — **all items** or a **hand-picked** selection (with images), one offer per game; presets (CS2, TF2, Dota 2, Rust, Steam) plus a **custom appid**; confirms the offer on mobile automatically
 
 ### Authenticator management
 - **Add authenticator** wizard — works **without a phone number** (Steam emails the
-  finalize code); revocation code is shown and re-confirmed in a separate dialog
+  finalize code); revocation code is shown and re-confirmed in a separate dialog. Signs
+  the new account in automatically once it's added
 - **Deactivate authenticator** on Steam for a selection, using each account's stored
   revocation code (batch), then removes them from the app
+
+### CS2 config sync
+- Copy one account's **CS2 settings / key binds / video config** onto other accounts
+  (all, a group, or hand-picked), with an automatic **backup** and one-click **restore**
 
 ### App
 - Encrypted-at-rest maFiles (one passkey, entered once per launch)

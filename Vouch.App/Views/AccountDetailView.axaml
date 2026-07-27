@@ -18,6 +18,20 @@
             <Setter Property="ToolTip.VerticalOffset" Value="-3" />
         </Style>
 
+        <!-- avatar session ring: green = signed in, yellow = expired, red = never signed in -->
+        <Style Selector="Border.avring">
+            <Setter Property="BorderBrush" Value="Transparent" />
+        </Style>
+        <Style Selector="Border.avring.ok">
+            <Setter Property="BorderBrush" Value="{DynamicResource Good}" />
+        </Style>
+        <Style Selector="Border.avring.warn">
+            <Setter Property="BorderBrush" Value="{DynamicResource WarnText}" />
+        </Style>
+        <Style Selector="Border.avring.out">
+            <Setter Property="BorderBrush" Value="{DynamicResource Bad}" />
+        </Style>
+
         <!-- revocation card: tucked under the credentials card; slides down on hover (drawer peek) -->
         <Style Selector="Border.revcard">
             <Setter Property="RenderTransform" Value="translateY(0px)" />
@@ -59,7 +73,7 @@
             </Setter>
         </Style>
         <Style Selector="Border.revcontent.open">
-            <Setter Property="MaxHeight" Value="120" />
+            <Setter Property="MaxHeight" Value="240" />
             <Setter Property="Opacity" Value="1" />
         </Style>
     </UserControl.Styles>
@@ -70,24 +84,40 @@
         <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto">
 
             <!-- avatar: colored initials until fetched, real image after -->
-            <Panel Grid.Column="0" Width="46" Height="46" DataContext="{Binding SelectedAccount}">
-                <Border CornerRadius="23" Background="{Binding AvatarBrush}"
-                        IsVisible="{Binding !HasAvatar}">
-                    <TextBlock Text="{Binding Initials}" Foreground="{DynamicResource OnAccent}" FontWeight="Bold"
-                               FontSize="17" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                </Border>
-                <Ellipse Width="46" Height="46" IsVisible="{Binding HasAvatar}">
-                    <Ellipse.Fill>
-                        <ImageBrush Source="{Binding Avatar}" Stretch="UniformToFill" />
-                    </Ellipse.Fill>
-                </Ellipse>
-            </Panel>
+            <!-- avatar wrapped in a session-status ring (matches the sidebar stripe colour) -->
+            <Border Grid.Column="0" DataContext="{Binding SelectedAccount}"
+                    Width="50" Height="50" CornerRadius="25" BorderThickness="2.5" Padding="2.5"
+                    Classes="avring"
+                    Classes.ok="{Binding SessionOk}" Classes.warn="{Binding SessionWarn}" Classes.out="{Binding SessionOut}">
+                <Panel>
+                    <Border CornerRadius="20" Background="{Binding AvatarBrush}" IsVisible="{Binding !HasAvatar}">
+                        <TextBlock Text="{Binding Initials}" Foreground="{DynamicResource OnAccent}" FontWeight="Bold"
+                                   FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <Ellipse IsVisible="{Binding HasAvatar}">
+                        <Ellipse.Fill>
+                            <ImageBrush Source="{Binding Avatar}" Stretch="UniformToFill" />
+                        </Ellipse.Fill>
+                    </Ellipse>
+                </Panel>
+            </Border>
 
             <StackPanel Grid.Column="1" Margin="14,0,0,0" VerticalAlignment="Center" ClipToBounds="True"
                         DataContext="{Binding SelectedAccount}">
                 <StackPanel Orientation="Horizontal" Spacing="8">
                     <TextBlock Text="{Binding PersonaName}" Foreground="{DynamicResource TextHi}"
                                FontSize="19" FontWeight="SemiBold" VerticalAlignment="Center" />
+                    <!-- session state next to the name (nothing shown when signed in) -->
+                    <Border IsVisible="{Binding SessionWarn}" Background="{DynamicResource WarnBg}" CornerRadius="8"
+                            Padding="7,2" VerticalAlignment="Center">
+                        <TextBlock Text="{loc:T Session_Expired}" Foreground="{DynamicResource WarnText}"
+                                   FontSize="10.5" FontWeight="SemiBold" />
+                    </Border>
+                    <Border IsVisible="{Binding SessionOut}" Background="{DynamicResource ChipBadBg}" CornerRadius="8"
+                            Padding="7,2" VerticalAlignment="Center">
+                        <TextBlock Text="{loc:T Session_None}" Foreground="{DynamicResource Bad}"
+                                   FontSize="10.5" FontWeight="SemiBold" />
+                    </Border>
                     <Border IsVisible="{Binding InfoUpdated}" Background="{DynamicResource ChipUpdatedBg}" CornerRadius="8"
                             Padding="7,2" VerticalAlignment="Center">
                         <TextBlock Text="{loc:T Detail_UpdatedJustNow}" Foreground="{DynamicResource Good}"
@@ -159,12 +189,18 @@
                             </Viewbox>
                         </Panel>
                     </Button>
-                    <Button Classes="pill acttip" Padding="9,7" Command="{Binding OpenTransferCommand}"
+                    <Button Classes="pill acttip" Padding="9,7"
                             Background="{DynamicResource Card}" Foreground="{DynamicResource TextHi}"
-                            ToolTip.Placement="Bottom" ToolTip.Tip="{loc:T Detail_Transfer}">
+                            ToolTip.Placement="Bottom" ToolTip.Tip="{loc:T Detail_Inventory}">
                         <Viewbox Width="15" Height="15">
                             <Canvas Width="24" Height="24"><Path Data="{StaticResource Ico_Package}" Fill="{DynamicResource TextHi}" /></Canvas>
                         </Viewbox>
+                        <Button.Flyout>
+                            <MenuFlyout Placement="BottomEdgeAlignedRight">
+                                <MenuItem Header="{loc:T Detail_Inventory}" Command="{Binding OpenInventoryCommand}" />
+                                <MenuItem Header="{loc:T Detail_Transfer}" Command="{Binding OpenTransferCommand}" />
+                            </MenuFlyout>
+                        </Button.Flyout>
                     </Button>
                     <Button Classes="pill acttip" Padding="9,7"
                             Background="{DynamicResource Card}" Foreground="{DynamicResource TextHi}"
@@ -371,7 +407,7 @@
              the chevron sits at the credentials' lower edge; hovering slides the whole card down. -->
         <Border Grid.Row="3" Classes="revcard" Classes.peek="{Binding !RevocationExpanded}"
                 Classes.open="{Binding RevocationExpanded}"
-                Margin="0,-54,0,0" IsVisible="{Binding HasRevocation}"
+                Margin="0,-54,0,0" IsVisible="{Binding HasDetailDrawer}"
                 Background="{DynamicResource CardHi}" CornerRadius="0,0,16,16" ClipToBounds="True">
             <StackPanel>
                 <Button Classes="rowlink" Command="{Binding ToggleRevocationExpandCommand}"
@@ -382,7 +418,8 @@
                               Classes.up="{Binding RevocationExpanded}" />
                     </Button>
                     <Border Classes="revcontent" Classes.open="{Binding RevocationExpanded}" ClipToBounds="True">
-                        <Grid Margin="22,0,22,14" ColumnDefinitions="90,*,Auto">
+                      <StackPanel Margin="22,0,22,14" Spacing="12">
+                        <Grid ColumnDefinitions="90,*,Auto" IsVisible="{Binding HasRevocation}">
                             <TextBlock Grid.Column="0" Text="{loc:T Detail_Revocation}" VerticalAlignment="Center"
                                        Foreground="{DynamicResource TextLo}" FontSize="11" FontWeight="Bold" />
                             <TextBlock Grid.Column="1" Text="{Binding DisplayRevocation}" VerticalAlignment="Center"
@@ -429,6 +466,18 @@
                                     </Button>
                                 </StackPanel>
                             </Grid>
+                        <!-- editable per-account note -->
+                        <Grid ColumnDefinitions="90,*">
+                            <TextBlock Grid.Column="0" Text="{loc:T Detail_Notes}" VerticalAlignment="Top" Margin="0,6,0,0"
+                                       Foreground="{DynamicResource TextLo}" FontSize="11" FontWeight="Bold" />
+                            <TextBox Grid.Column="1" Text="{Binding SelectedAccount.Notes, Mode=TwoWay}"
+                                     AcceptsReturn="True" TextWrapping="Wrap" MinHeight="54" MaxHeight="90"
+                                     VerticalContentAlignment="Top" PlaceholderText="{loc:T Detail_NotesHint}"
+                                     LostFocus="Notes_LostFocus"
+                                     Background="{DynamicResource InputBg}" BorderThickness="0" CornerRadius="8"
+                                     Foreground="{DynamicResource TextHi}" FontSize="13" />
+                        </Grid>
+                      </StackPanel>
                     </Border>
                 </StackPanel>
             </Border>
@@ -469,6 +518,16 @@
                             </Border>
                         </StackPanel>
                     </Button>
+                    <Button Classes="tab" Classes.active="{Binding IsDevicesTab}"
+                            Command="{Binding SelectTabCommand}" CommandParameter="3">
+                        <StackPanel Orientation="Horizontal" Spacing="7">
+                            <TextBlock Text="{loc:T Devices_Title}" />
+                            <Border Background="{DynamicResource CardHi}" CornerRadius="9" Padding="7,1" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding DevicesCount}" Foreground="{DynamicResource Accent}"
+                                           FontSize="11" FontWeight="Bold" />
+                            </Border>
+                        </StackPanel>
+                    </Button>
                 </StackPanel>
 
                 <Button Grid.Column="1" Classes="pill" Padding="10,5" ToolTip.Tip="{loc:T Confirm_RefreshTip}"
@@ -499,40 +558,41 @@
                                    IsVisible="{Binding OffersBusy}" />
                     </StackPanel>
                 </Button>
-                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8"
-                            IsVisible="{Binding IsNotifTab}" HorizontalAlignment="Right">
-                    <Button Classes="pill" Padding="10,5"
-                            Background="{DynamicResource Card}" Foreground="{DynamicResource TextHi}"
-                            Command="{Binding MarkAllNotificationsReadCommand}"
-                            IsVisible="{Binding HasUnreadNotifications}">
-                        <StackPanel Orientation="Horizontal" Spacing="7">
-                            <Viewbox Width="16" Height="16">
-                                <Canvas Width="24" Height="24">
-                                    <Path Data="{StaticResource Ico_Check}" Fill="{DynamicResource TextHi}" />
-                                </Canvas>
-                            </Viewbox>
-                            <TextBlock Text="{loc:T Notif_MarkAllRead}" FontSize="12" />
-                        </StackPanel>
-                    </Button>
-                    <Button Classes="pill" Padding="10,5"
-                            Background="{DynamicResource Card}" Foreground="{DynamicResource TextHi}"
-                            Command="{Binding RefreshNotificationsCommand}">
-                        <StackPanel Orientation="Horizontal" Spacing="7">
-                            <Viewbox Width="16" Height="16">
-                                <Canvas Width="24" Height="24">
-                                    <Path Data="{StaticResource Ico_Refresh}" Fill="{DynamicResource TextHi}" />
-                                </Canvas>
-                            </Viewbox>
-                            <TextBlock Text="{loc:T Confirm_Refresh}" FontSize="12" IsVisible="{Binding !NotificationsBusy}" />
-                            <TextBlock Text="{loc:T Confirm_LoadingShort}" FontSize="12" Foreground="{DynamicResource Accent}"
-                                       IsVisible="{Binding NotificationsBusy}" />
-                        </StackPanel>
-                    </Button>
-                </StackPanel>
+                <Button Grid.Column="1" Classes="pill" Padding="10,5"
+                        Background="{DynamicResource Card}" Foreground="{DynamicResource TextHi}"
+                        IsVisible="{Binding IsNotifTab}" Command="{Binding RefreshNotificationsCommand}">
+                    <StackPanel Orientation="Horizontal" Spacing="7">
+                        <Viewbox Width="16" Height="16">
+                            <Canvas Width="24" Height="24">
+                                <Path Data="{StaticResource Ico_Refresh}" Fill="{DynamicResource TextHi}" />
+                            </Canvas>
+                        </Viewbox>
+                        <TextBlock Text="{loc:T Confirm_Refresh}" FontSize="12" IsVisible="{Binding !NotificationsBusy}" />
+                        <TextBlock Text="{loc:T Confirm_LoadingShort}" FontSize="12" Foreground="{DynamicResource Accent}"
+                                   IsVisible="{Binding NotificationsBusy}" />
+                    </StackPanel>
+                </Button>
+                <Button Grid.Column="1" Classes="pill" Padding="10,5"
+                        Background="{DynamicResource Card}" Foreground="{DynamicResource TextHi}"
+                        IsVisible="{Binding IsDevicesTab}" Command="{Binding RefreshDevicesCommand}">
+                    <StackPanel Orientation="Horizontal" Spacing="7">
+                        <Viewbox Width="16" Height="16">
+                            <Canvas Width="24" Height="24">
+                                <Path Data="{StaticResource Ico_Refresh}" Fill="{DynamicResource TextHi}" />
+                            </Canvas>
+                        </Viewbox>
+                        <TextBlock Text="{loc:T Confirm_Refresh}" FontSize="12" IsVisible="{Binding !DevicesBusy}" />
+                        <TextBlock Text="{loc:T Confirm_LoadingShort}" FontSize="12" Foreground="{DynamicResource Accent}"
+                                   IsVisible="{Binding DevicesBusy}" />
+                    </StackPanel>
+                </Button>
             </Grid>
 
             <!-- tab content -->
             <Panel Grid.Row="1">
+
+              <!-- when the session has expired, one hint replaces all four tabs' content -->
+              <Panel IsVisible="{Binding !SelectedAccount.SessionWarn}">
 
                 <!-- CONFIRMATIONS -->
                 <Grid IsVisible="{Binding IsConfTab}" RowDefinitions="Auto,*">
@@ -637,12 +697,25 @@
                 </Grid>
 
                 <!-- NOTIFICATIONS -->
-                <Grid IsVisible="{Binding IsNotifTab}" RowDefinitions="Auto,*">
-                    <Border Grid.Row="0" Background="{DynamicResource CardHi}" CornerRadius="8" Padding="12,8" Margin="0,0,0,10"
+                <Grid IsVisible="{Binding IsNotifTab}" RowDefinitions="Auto,Auto,*">
+                    <Button Grid.Row="0" Classes="pill" Padding="12,6" HorizontalAlignment="Right" Margin="0,0,0,10"
+                            Background="{DynamicResource Card}" Foreground="{DynamicResource TextHi}"
+                            Command="{Binding MarkAllNotificationsReadCommand}"
+                            IsVisible="{Binding HasUnreadNotifications}">
+                        <StackPanel Orientation="Horizontal" Spacing="7">
+                            <Viewbox Width="16" Height="16">
+                                <Canvas Width="24" Height="24">
+                                    <Path Data="{StaticResource Ico_Check}" Fill="{DynamicResource TextHi}" />
+                                </Canvas>
+                            </Viewbox>
+                            <TextBlock Text="{loc:T Notif_MarkAllRead}" FontSize="12" />
+                        </StackPanel>
+                    </Button>
+                    <Border Grid.Row="1" Background="{DynamicResource CardHi}" CornerRadius="8" Padding="12,8" Margin="0,0,0,10"
                             IsVisible="{Binding NotificationsStatus, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
                         <TextBlock Text="{Binding NotificationsStatus}" Foreground="{DynamicResource TextLo}" FontSize="12" TextWrapping="Wrap" />
                     </Border>
-                    <ScrollViewer Grid.Row="1">
+                    <ScrollViewer Grid.Row="2">
                         <ItemsControl ItemsSource="{Binding Notifications}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="vm:NotificationItem">
@@ -672,6 +745,65 @@
                         </ItemsControl>
                     </ScrollViewer>
                 </Grid>
+
+                <!-- DEVICES (read-only list; sign-out happens on the Steam website) -->
+                <Grid IsVisible="{Binding IsDevicesTab}" RowDefinitions="Auto,Auto,*">
+                    <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,10">
+                        <TextBlock Grid.Column="0" Text="{loc:T Devices_ManageHint}" VerticalAlignment="Center"
+                                   Foreground="{DynamicResource TextLo}" FontSize="11.5" TextWrapping="Wrap" Margin="0,0,10,0" />
+                        <Button Grid.Column="1" Classes="pill" Padding="14,7" VerticalAlignment="Center"
+                                Background="{DynamicResource Accent}" Foreground="{DynamicResource OnAccent}"
+                                IsEnabled="{Binding !DevicesBusy}"
+                                Command="{Binding OpenDevicesInBrowserCommand}">
+                            <StackPanel Orientation="Horizontal" Spacing="7">
+                                <Viewbox Width="15" Height="15">
+                                    <Canvas Width="24" Height="24"><Path Data="{StaticResource Ico_Web}" Fill="{DynamicResource OnAccent}" /></Canvas>
+                                </Viewbox>
+                                <TextBlock Text="{loc:T Devices_ManageInBrowser}" FontSize="12.5" FontWeight="Medium" />
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+                    <Border Grid.Row="1" Background="{DynamicResource CardHi}" CornerRadius="8" Padding="12,8" Margin="0,0,0,10"
+                            IsVisible="{Binding DevicesStatus, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                        <TextBlock Text="{Binding DevicesStatus}" Foreground="{DynamicResource TextLo}" FontSize="12" TextWrapping="Wrap" />
+                    </Border>
+                    <ScrollViewer Grid.Row="2">
+                        <ItemsControl ItemsSource="{Binding Devices}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:DeviceItem">
+                                    <Border Background="{DynamicResource Card}" CornerRadius="10" Padding="14,10" Margin="0,0,0,8">
+                                        <Grid ColumnDefinitions="Auto,*">
+                                            <Viewbox Grid.Column="0" Width="18" Height="18" VerticalAlignment="Center">
+                                                <Canvas Width="24" Height="24">
+                                                    <Path Data="{StaticResource Ico_Shield}" Fill="{DynamicResource TextLo}" />
+                                                </Canvas>
+                                            </Viewbox>
+                                            <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Name}" Foreground="{DynamicResource TextHi}" FontSize="13" />
+                                                <TextBlock Text="{Binding Raw}" Foreground="{DynamicResource TextLo}" FontSize="11"
+                                                           TextTrimming="CharacterEllipsis" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Grid>
+              </Panel>
+
+              <!-- session expired: one consistent message across all four tabs -->
+              <StackPanel IsVisible="{Binding SelectedAccount.SessionWarn}" Spacing="12"
+                          VerticalAlignment="Center" HorizontalAlignment="Center" MaxWidth="360">
+                  <Viewbox Width="26" Height="26" HorizontalAlignment="Center">
+                      <Canvas Width="24" Height="24"><Path Data="{StaticResource Ico_Key}" Fill="{DynamicResource WarnText}" /></Canvas>
+                  </Viewbox>
+                  <TextBlock Text="{loc:T Offers_LoadFailed}" Foreground="{DynamicResource TextLo}" FontSize="13"
+                             TextWrapping="Wrap" TextAlignment="Center" />
+                  <Button Classes="pill" Padding="16,8" HorizontalAlignment="Center"
+                          Background="{DynamicResource Accent}" Foreground="{DynamicResource OnAccent}"
+                          Command="{Binding OpenLoginCommand}" Content="{loc:T Detail_ReSignIn}" />
+              </StackPanel>
             </Panel>
         </Grid>
     </Grid>

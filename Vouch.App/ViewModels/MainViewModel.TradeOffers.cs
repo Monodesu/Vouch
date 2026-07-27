@@ -141,11 +141,12 @@ public partial class MainViewModel
     private readonly SteamTradeOffersService _offersService = new();
     private readonly SteamNotificationsService _notifService = new();
 
-    // 0 = confirmations, 1 = trade offers, 2 = notifications
+    // 0 = confirmations, 1 = trade offers, 2 = notifications, 3 = devices
     [ObservableProperty] private int _detailTab;
     public bool IsConfTab => DetailTab == 0;
     public bool IsOffersTab => DetailTab == 1;
     public bool IsNotifTab => DetailTab == 2;
+    public bool IsDevicesTab => DetailTab == 3;
 
     public ObservableCollection<OfferItem> TradeOffers { get; } = new();
     public ObservableCollection<NotificationItem> Notifications { get; } = new();
@@ -162,6 +163,7 @@ public partial class MainViewModel
         OnPropertyChanged(nameof(IsConfTab));
         OnPropertyChanged(nameof(IsOffersTab));
         OnPropertyChanged(nameof(IsNotifTab));
+        OnPropertyChanged(nameof(IsDevicesTab));
         EnsureTabLoaded();
     }
 
@@ -179,10 +181,13 @@ public partial class MainViewModel
     {
         TradeOffers.Clear();
         Notifications.Clear();
-        OffersStatus = NotificationsStatus = "";
+        Devices.Clear();
+        OffersStatus = NotificationsStatus = DevicesStatus = "";
         OnPropertyChanged(nameof(OffersCount));
+        NotifyDevicesChanged();
         NotifyUnreadChanged();
         _offersLoaded = _notifLoaded = true;
+        DevicesLoaded = false; // reload on next Devices-tab open (they're not needed for a badge count)
         _ = RefreshOffers();
         _ = RefreshNotifications();
     }
@@ -191,6 +196,8 @@ public partial class MainViewModel
     {
         if (DetailTab == 1 && !_offersLoaded) { _offersLoaded = true; _ = RefreshOffers(); }
         if (DetailTab == 2 && !_notifLoaded) { _notifLoaded = true; _ = RefreshNotifications(); }
+        // Devices load lazily (they need a token renew + a network round-trip) — only on first open.
+        if (DetailTab == 3 && !DevicesLoaded) { DevicesLoaded = true; _ = RefreshDevices(); }
     }
 
     public int OffersCount => TradeOffers.Count;
@@ -220,6 +227,7 @@ public partial class MainViewModel
             if (SelectedAccount is not { HasSession: true }) OffersStatus = Loc.T("Offers_SignIn");
             return;
         }
+        _ = RevalidateSessionAsync(acc, force: true); // manual refresh → authoritative session check
         OffersBusy = true;
         OffersStatus = Loc.T("Offers_Loading");
         try
@@ -386,6 +394,7 @@ public partial class MainViewModel
             if (SelectedAccount is not { HasSession: true }) NotificationsStatus = Loc.T("Offers_SignIn");
             return;
         }
+        _ = RevalidateSessionAsync(acc, force: true); // manual refresh → authoritative session check
         NotificationsBusy = true;
         NotificationsStatus = Loc.T("Offers_Loading");
         try

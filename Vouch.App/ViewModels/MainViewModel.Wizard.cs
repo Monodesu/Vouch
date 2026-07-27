@@ -234,6 +234,24 @@ public partial class MainViewModel
         }
     }
 
+    /// <summary>Right after enrolling, sign in once with the stored credentials so the account gets a full
+    /// session (access + refresh token). The enrollment login's refresh token isn't kept, so without this
+    /// the account shows "not signed in" and its login-approvals can't be actioned. Silent + best-effort.</summary>
+    private async Task AutoSignInAsync(AccountViewModel acc)
+    {
+        if (acc.Model is null || string.IsNullOrEmpty(acc.Username) || string.IsNullOrEmpty(acc.Password)) return;
+        try
+        {
+            // The account now has an authenticator, so login uses the device code (from the shared secret);
+            // no email/mobile approval is needed.
+            var authenticator = new MaFileAuthenticator(acc.SharedSecret, (_, _) => Task.FromResult(""));
+            var result = await _login.LoginAsync(acc.Username, acc.Password, authenticator);
+            ApplyLoginResult(acc, result, acc.Password);
+            RefreshSignInLabel();
+        }
+        catch { /* the account is added; the user can sign in manually if this didn't take */ }
+    }
+
     private Task<string> ProvideWizardEmailCodeAsync(string email, bool previousWasIncorrect)
     {
         _wizardEmailTcs = new TaskCompletionSource<string>();
@@ -320,6 +338,7 @@ public partial class MainViewModel
                     ShowFinalizePrompt = false;
                     ShowWizard = false;
                     ShowToast(Loc.T("Wizard_Added", linked.AccountName ?? WizardUsername.Trim()), ToastKind.Success);
+                    _ = AutoSignInAsync(acc); // establish a full (renewable) session — enrollment only leaves a short-lived token
                     break;
                 case FinalizeStatus.BadSmsCode:
                     WizardStatus = StatusLine.Error(Loc.T("Wizard_StatusBadSms"));

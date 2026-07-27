@@ -116,11 +116,62 @@ public partial class MainViewModel
         if (_transferTargets.Count == 0) return;
         CloseDialogs();
         TransferBusy = false;
-        SelectGame ??= TransferGames.FirstOrDefault();
+        TransferGames.Clear();          // don't flash the presets — show "Loading…" until the real list arrives
+        TransferGamesLoading = true;
         InventoryItems.Clear();
         InventoryLoaded = false;
         OnPropertyChanged(nameof(HasNoInventory));
         ShowTransfer = true;
+        _ = RefreshTransferGamesAsync(); // fill with the account's actual games-with-items
+    }
+
+    [ObservableProperty] private bool _transferGamesLoading;
+
+    // The static fallback list, used only when the account's real games-with-items can't be read.
+    private static readonly (int App, string Ctx, string Name)[] PresetGames =
+    {
+        (730, "2", "CS2 / CS:GO"), (440, "2", "Team Fortress 2"), (570, "2", "Dota 2"),
+        (252490, "2", "Rust"), (753, "6", "Steam (cards, backgrounds…)"),
+    };
+
+    /// <summary>Rebuilds <see cref="TransferGames"/> from the games the transfer target(s) actually hold
+    /// items in (union across a multi-account selection), with counts — same source as the inventory
+    /// viewer. Falls back to <see cref="PresetGames"/> if nothing could be read (offline / not signed in).</summary>
+    private async Task RefreshTransferGamesAsync()
+    {
+        TransferGamesLoading = true;
+        try
+        {
+            var union = new Dictionary<int, (string Ctx, string Name, int Count)>();
+            foreach (var acc in _transferTargets.Where(a => a.IsReal).ToList())
+            {
+                try
+                {
+                    if (!await EnsureFreshSessionAsync(acc) || acc.AccessToken is not { } token
+                        || !ulong.TryParse(acc.SteamId, out var sid))
+                        continue;
+                    foreach (var app in await _inventory.FetchInventoryAppsAsync(sid, token))
+                        union[app.AppId] = union.TryGetValue(app.AppId, out var cur)
+                            ? (cur.Ctx, cur.Name, cur.Count + app.AssetCount)
+                            : (app.ContextId, app.Name, app.AssetCount);
+                }
+                catch { /* skip this account */ }
+            }
+            if (!ShowTransfer) return; // dialog was closed while fetching
+
+            var ticked = TransferGames.Where(g => g.IsSelected).Select(g => g.AppId).ToHashSet();
+            TransferGames.Clear();
+            if (union.Count > 0)
+                foreach (var kv in union.OrderByDescending(k => k.Value.Count))
+                    TransferGames.Add(new TransferGame(kv.Key, kv.Value.Ctx, $"{kv.Value.Name} ({kv.Value.Count})")
+                    { IsSelected = ticked.Contains(kv.Key) });
+            else
+                foreach (var p in PresetGames)
+                    TransferGames.Add(new TransferGame(p.App, p.Ctx, p.Name));
+
+            SelectGame = TransferGames.FirstOrDefault();
+        }
+        finally { TransferGamesLoading = false; }
     }
 
     /// <summary>Loads the chosen game's tradable items (with names) for the first signed-in target, so

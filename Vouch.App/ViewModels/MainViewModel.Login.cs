@@ -186,6 +186,8 @@ public partial class MainViewModel
         model.FullyEnrolled = true;
         _repo.Save(model);
         acc.HasSession = true;
+        acc.SessionInvalid = false; // fresh session — clears any "dead" mark (also refreshes the stripe)
+        acc.RefreshSessionState(); // update the sidebar stripe / avatar ring colour now
     }
 
     /// <summary>Called by the authenticator (off the UI thread) when Steam wants an email code.</summary>

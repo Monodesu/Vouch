@@ -26,6 +26,10 @@ public class SteamGuardAccount
     /// convenience Copy/Sign-in fields. Other tools ignore the unknown key; it's encrypted at rest
     /// when maFile encryption is on.</summary>
     [JsonPropertyName("account_password")] public string? AccountPassword { get; set; }
+
+    /// <summary>Vouch extension (not in the original maFile): a free-text note the user can jot against
+    /// the account. Other tools ignore the unknown key; encrypted at rest when maFile encryption is on.</summary>
+    [JsonPropertyName("account_notes")] public string? AccountNotes { get; set; }
 }
 
 /// <summary>Steam web session. Newer files use access/refresh tokens; older ones the cookies.</summary>

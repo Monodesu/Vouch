@@ -77,6 +77,8 @@ public partial class MainViewModel : ViewModelBase
 
     public string Revocation => SelectedAccount?.RevocationCode ?? "";
     public bool HasRevocation => !string.IsNullOrEmpty(SelectedAccount?.RevocationCode);
+    /// <summary>The credentials drawer (revocation code + notes) shows for any real account.</summary>
+    public bool HasDetailDrawer => SelectedAccount is { IsReal: true };
     public string DisplayRevocation
     {
         get
@@ -182,11 +184,13 @@ public partial class MainViewModel : ViewModelBase
         OnPropertyChanged(nameof(DisplayPassword));
         OnPropertyChanged(nameof(Revocation));
         OnPropertyChanged(nameof(HasRevocation));
+        OnPropertyChanged(nameof(HasDetailDrawer));
         OnPropertyChanged(nameof(DisplayRevocation));
         RefreshSignInLabel();
         LoadConfirmations(value);
         ResetDetailTabs();
         Tick();
+        if (value is not null) _ = RevalidateSessionAsync(value, force: true); // authoritative refresh-token check
     }
 
     partial void OnPasswordRevealedChanged(bool value) => OnPropertyChanged(nameof(DisplayPassword));
@@ -251,10 +255,17 @@ public partial class MainViewModel : ViewModelBase
     [RelayCommand]
     private void ToggleRevocationExpand() => RevocationExpanded = !RevocationExpanded;
 
-    // Re-mask the code whenever the section collapses.
+    // Re-mask the code whenever the section collapses (and flush any note edits to disk).
     partial void OnRevocationExpandedChanged(bool value)
     {
-        if (!value) RevealRevocation = false;
+        if (!value) { RevealRevocation = false; SaveAccountNotes(); }
+    }
+
+    /// <summary>Persists the selected account's note (already mirrored into its model by the Notes setter).
+    /// Called when the notes box loses focus or the drawer closes.</summary>
+    public void SaveAccountNotes()
+    {
+        if (SelectedAccount is { IsReal: true, Model: { } model }) _repo.Save(model);
     }
 
     [RelayCommand]

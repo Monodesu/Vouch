@@ -33,6 +33,7 @@ public partial class MainViewModel
         if (string.IsNullOrEmpty(session.RefreshToken))
         {
             acc.HasSession = false;
+            acc.SessionInvalid = true; // no way to renew → session is dead
             return false;
         }
 
@@ -42,6 +43,7 @@ public partial class MainViewModel
         if (renewed is null)
         {
             acc.HasSession = false;
+            acc.SessionInvalid = true; // refresh token expired / revoked → mark dead (the loop check)
             return false;
         }
 
@@ -49,7 +51,37 @@ public partial class MainViewModel
         session.RefreshToken = renewed.RefreshToken;
         _repo.Save(acc.Model!);
         acc.HasSession = true;
+        acc.SessionInvalid = false; // renew succeeded → session is live again
         return true;
+    }
+
+    /// <summary>Authoritatively re-checks an account by actually using its refresh token (a renew) — the
+    /// only reliable way to catch a "signed out of all devices" while the short-lived access token still
+    /// looks valid (access-token API calls react to revocation inconsistently). Marks the session dead on
+    /// failure, refreshes it on success. Best-effort; runs when an account is selected.</summary>
+    private async Task RevalidateSessionAsync(AccountViewModel acc, bool force = false)
+    {
+        if (!acc.IsReal || acc.Model?.Session is not { RefreshToken: { Length: > 0 } } session) return;
+        // Interactive checks (selection / manual refresh) run immediately; background ones are throttled
+        // so a big fleet doesn't hammer Steam with renews.
+        if (!force && DateTimeOffset.UtcNow - acc.LastRevalidated < TimeSpan.FromMinutes(30)) return;
+        acc.LastRevalidated = DateTimeOffset.UtcNow;
+
+        SteamLoginResult? renewed;
+        try { renewed = await _session.RenewAsync(session.SteamId, session.RefreshToken); }
+        catch { return; } // network error — leave state as-is
+
+        if (renewed is null)
+        {
+            acc.HasSession = false;
+            acc.SessionInvalid = true; // the refresh token was rejected — session is dead
+            return;
+        }
+        session.AccessToken = renewed.AccessToken;
+        session.RefreshToken = renewed.RefreshToken;
+        _repo.Save(acc.Model!);
+        acc.HasSession = true;
+        acc.SessionInvalid = false;
     }
 
     private void LoadConfirmations(AccountViewModel? acc)
@@ -118,6 +150,7 @@ public partial class MainViewModel
     {
         try
         {
+            await RevalidateSessionAsync(acc); // throttled authoritative refresh-token check
             if (!await EnsureFreshSessionAsync(acc)) return;
 
             int loginCount = 0;
@@ -145,7 +178,7 @@ public partial class MainViewModel
                 NotifyIfNewer(acc, offers.Where(o => o.IsIncoming).Select(o => o.Id), isConf: false);
             }
         }
-        catch (Exception) { /* leave state as-is */ }
+        catch (Exception) { /* leave state as-is — a fetch failure could just be a network blip */ }
     }
 
     /// <summary>Raises a system notification when the highest id exceeds the last one we announced.
@@ -374,6 +407,8 @@ public partial class MainViewModel
             {
                 if (item is not null) RemoveConfirmation(item, acc);
                 if (ShowLoginDetail) { ShowLoginDetail = false; _loginDetailItem = null; DetailLogin = null; }
+                acc.RefreshSessionState();   // reflect the now-valid session immediately (stripe / ring / label)
+                RefreshSignInLabel();
                 if (accept) ShowToast(Loc.T("Login_Approved"), ToastKind.Success);
             }
             else ConfirmationsStatus = Loc.T("Confirm_StatusRejected");

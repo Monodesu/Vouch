@@ -32,6 +32,19 @@ public partial class AccountViewModel : ObservableObject
         }
     }
 
+    private string _notes = "";
+    /// <summary>Free-text note for this account. Writing it keeps the backing maFile model in sync; the
+    /// caller persists via <c>repo.Save</c> (see MainViewModel.SaveAccountNotes).</summary>
+    public string Notes
+    {
+        get => _notes;
+        set
+        {
+            _notes = value;
+            if (Model is not null) Model.AccountNotes = value;
+        }
+    }
+
     public byte[] SharedSecret { get; private set; }
 
     // Populated for real (imported) accounts; null for mock ones.
@@ -47,6 +60,46 @@ public partial class AccountViewModel : ObservableObject
 
     /// <summary>The session's current access token, or null when the account has no session.</summary>
     public string? AccessToken => Session?.AccessToken;
+
+    // ---- session indicator (sidebar stripe) ----
+    // Green = signed in (a live access OR refresh token — right after enrollment there's only an access
+    // token), Yellow = signed in before but every token has expired, Red = never signed in (no tokens).
+
+    private static bool TokenAlive(string? jwt) =>
+        !string.IsNullOrEmpty(jwt) && !Vouch.Core.Steam.SteamSessionService.IsExpired(jwt, TimeSpan.Zero);
+
+    private bool HasRefresh => !string.IsNullOrEmpty(Session?.RefreshToken);
+    private bool HasAnyToken => HasRefresh || !string.IsNullOrEmpty(Session?.AccessToken);
+
+    /// <summary>Set when a session op (renew / web-session handshake) confirmed the session is dead even
+    /// though a token may still look time-valid (e.g. a revoked-but-unexpired refresh token). Cleared by a
+    /// successful renew/login. In-memory only.</summary>
+    [ObservableProperty] private bool _sessionInvalid;
+    partial void OnSessionInvalidChanged(bool value) => RefreshSessionState();
+
+    /// <summary>When the session was last authoritatively re-checked (a renew). Throttles background checks.</summary>
+    internal DateTimeOffset LastRevalidated { get; set; }
+
+    /// <summary>Green: signed in. The refresh token is the real ~200-day credential, so if one exists it
+    /// must be alive (an expired refresh means the session can't be sustained even if the short-lived
+    /// access token still looks valid); right after enrolling there's only an access token, so fall back
+    /// to that.</summary>
+    public bool SessionOk => !SessionInvalid
+        && (HasRefresh ? TokenAlive(Session!.RefreshToken) : TokenAlive(Session?.AccessToken));
+
+    /// <summary>Red: never signed in — no tokens at all.</summary>
+    public bool SessionOut => !SessionInvalid && !HasAnyToken;
+
+    /// <summary>Yellow: was signed in but the session expired / was confirmed dead — needs re-login.</summary>
+    public bool SessionWarn => !SessionOk && !SessionOut;
+
+    /// <summary>Re-evaluates the session indicator (call after the session tokens change — login/renew).</summary>
+    public void RefreshSessionState()
+    {
+        OnPropertyChanged(nameof(SessionOk));
+        OnPropertyChanged(nameof(SessionWarn));
+        OnPropertyChanged(nameof(SessionOut));
+    }
 
     // Background-notification de-dup (in-memory): highest confirmation / incoming-offer id already toasted.
     // Baseline flags suppress a toast on the first sweep so startup doesn't announce pre-existing items.
@@ -128,6 +181,7 @@ public partial class AccountViewModel : ObservableObject
             RevocationCode = a.RevocationCode,
             IsReal = true,
             Model = a,
+            Notes = a.AccountNotes ?? "",
             HasSession = !string.IsNullOrEmpty(a.Session?.AccessToken)
         };
         return vm;
@@ -174,6 +228,7 @@ public partial class AccountViewModel : ObservableObject
         OnPropertyChanged(nameof(Initials));
     }
 
+    partial void OnHasSessionChanged(bool value) => RefreshSessionState();
     partial void OnPendingConfirmationsChanged(int value) => OnPropertyChanged(nameof(HasPending));
     partial void OnAvatarChanged(Bitmap? value) => OnPropertyChanged(nameof(HasAvatar));
     partial void OnPersonaNameChanged(string value) => OnPropertyChanged(nameof(Initials));

@@ -64,34 +64,43 @@ public partial class MainViewModel
     }
 
     /// <summary>
-    /// Moves the dragged accounts so they land before <paramref name="dropBefore"/> (null = end of list),
-    /// keeping their existing relative order, then persists. Called by the sidebar's drag-drop.
+    /// Drag-drop from the sidebar: moves the dragged accounts into <paramref name="group"/> and positions
+    /// them before <paramref name="dropBefore"/> (an account in that group; null = end of the group),
+    /// keeping their relative order. Setting the group is what makes a cross-group drag actually land in
+    /// the target group instead of snapping back to the source group. Persists + rebuilds.
     /// </summary>
-    public void MoveAccounts(IReadOnlyList<AccountViewModel> dragged, AccountViewModel? dropBefore)
+    public void MoveAccountsToGroupAt(IReadOnlyList<AccountViewModel> dragged, string group, AccountViewModel? dropBefore)
     {
+        group = (group ?? "").Trim();
         var moving = Accounts.Where(dragged.Contains).ToList(); // current order, not drag order
         if (moving.Count == 0) return;
 
+        foreach (var a in moving) a.Group = group;
+        if (group.Length > 0 && !_groupOrder.Contains(group)) _groupOrder.Add(group);
+
         var remaining = Accounts.Where(a => !moving.Contains(a)).ToList();
 
-        // Where to reinsert: before the drop target, skipping past any moving items to the next anchor.
-        int insertAt = remaining.Count;
-        if (dropBefore is not null)
+        // Position in the flat list; RebuildSidebar re-groups by Group, so only the order relative to the
+        // target group's other members matters.
+        int insertAt;
+        if (dropBefore is not null && !moving.Contains(dropBefore) && remaining.Contains(dropBefore))
         {
-            var anchor = moving.Contains(dropBefore)
-                ? Accounts.Skip(Accounts.IndexOf(dropBefore)).FirstOrDefault(a => !moving.Contains(a))
-                : dropBefore;
-            if (anchor is not null)
-            {
-                int i = remaining.IndexOf(anchor);
-                if (i >= 0) insertAt = i;
-            }
+            insertAt = remaining.IndexOf(dropBefore);
+        }
+        else
+        {
+            // append after the last remaining account already in the target group (else end of list)
+            int last = -1;
+            for (int i = 0; i < remaining.Count; i++)
+                if ((remaining[i].Group ?? "") == group) last = i;
+            insertAt = last >= 0 ? last + 1 : remaining.Count;
         }
 
         var result = new List<AccountViewModel>(remaining);
         result.InsertRange(insertAt, moving);
         ApplyOrder(result);
-        SaveAccountOrder();
+        SaveLayout();
+        RebuildSidebar(); // ensure a group-only change (no flat Move) still reflects
     }
 
     // ---- batch actions (driven by the sidebar's multi-selection) ----
@@ -178,6 +187,7 @@ public partial class MainViewModel
         RevocationCode = acc.RevocationCode,
         AccountName = acc.Username,
         AccountPassword = string.IsNullOrEmpty(acc.Password) ? null : acc.Password,
+        AccountNotes = string.IsNullOrEmpty(acc.Notes) ? null : acc.Notes,
         Session = new SessionData { SteamId = ulong.TryParse(acc.SteamId, out var id) ? id : 0 },
     };
 }

@@ -54,7 +54,7 @@ public partial class MainViewModel
     /// </summary>
     private void ImportFiles(IReadOnlyList<string> paths, string? password)
     {
-        int ok = 0, failed = 0;
+        int ok = 0, failed = 0, skipped = 0;
         string? lastError = null;
         AccountViewModel? lastAccount = null;
         var pending = new List<string>();
@@ -65,8 +65,8 @@ public partial class MainViewModel
             switch (result.Status)
             {
                 case MaFileLoadStatus.Ok:
-                    lastAccount = AddImported(result.Account!);
-                    ok++;
+                    lastAccount = AddImported(result.Account!, out var wasSkipped);
+                    if (wasSkipped) skipped++; else ok++;
                     break;
                 case MaFileLoadStatus.NeedsPassword:
                 case MaFileLoadStatus.WrongPassword:
@@ -84,14 +84,22 @@ public partial class MainViewModel
         ImportNeedsPassword = pending.Count > 0;
         if (pending.Count == 0) ImportPassword = "";
 
-        ImportStatus = DescribeImport(ok, failed, pending.Count, lastAccount, lastError, triedPassword: password is not null);
+        ImportStatus = DescribeImport(ok, failed, skipped, pending.Count, lastAccount, lastError, triedPassword: password is not null);
     }
 
-    /// <summary>Adds (or replaces, on re-import) an imported account and persists it to disk.</summary>
-    private AccountViewModel AddImported(SteamGuardAccount model)
+    /// <summary>Adds an imported account and persists it. If the account already exists it is left
+    /// untouched (<paramref name="skipped"/> = true) — re-importing must never clobber the stored
+    /// password / session / group, which the plain maFile doesn't carry.</summary>
+    private AccountViewModel AddImported(SteamGuardAccount model, out bool skipped)
     {
         var acc = CreateAccountVm(model, Accounts.Count % 5);
-        if (Accounts.FirstOrDefault(a => a.SteamId == acc.SteamId) is { } dup) Accounts.Remove(dup);
+        if (Accounts.FirstOrDefault(a => a.SteamId == acc.SteamId) is { } dup)
+        {
+            skipped = true;
+            SelectedAccount = dup; // surface the one that's already there
+            return dup;
+        }
+        skipped = false;
         Accounts.Add(acc);
         SelectedAccount = acc;
         _repo.Save(model);
@@ -99,15 +107,21 @@ public partial class MainViewModel
         return acc;
     }
 
-    private static string DescribeImport(int ok, int failed, int pending, AccountViewModel? last, string? error, bool triedPassword)
+    private static string DescribeImport(int ok, int failed, int skipped, int pending, AccountViewModel? last, string? error, bool triedPassword)
     {
         if (pending > 0)
             return triedPassword
                 ? StatusLine.Error(Loc.T("Import_StatusWrongPasskeyN", pending))
                 : Loc.T("Import_StatusNeedsPasskeyN", pending);
 
-        if (ok == 1 && failed == 0 && last is not null)
+        // nothing new imported, everything was already present
+        if (ok == 0 && failed == 0 && skipped > 0)
+            return StatusLine.Warn(Loc.T("Import_StatusSkipped", skipped));
+
+        if (ok == 1 && failed == 0 && skipped == 0 && last is not null)
             return StatusLine.Ok(Loc.T("Import_StatusOk", last.PersonaName, last.SteamId));
+        if (ok > 0 && failed == 0 && skipped > 0)
+            return StatusLine.Ok(Loc.T("Import_StatusBatchOkSkipped", ok, skipped));
         if (ok > 0 && failed == 0)
             return StatusLine.Ok(Loc.T("Import_StatusBatchOk", ok));
         if (ok > 0)
@@ -141,14 +155,7 @@ public partial class MainViewModel
         var path = await PickExportPath(suggested);
         if (string.IsNullOrEmpty(path)) return;
 
-        var model = new SteamGuardAccount
-        {
-            SharedSecret = Convert.ToBase64String(acc.SharedSecret),
-            IdentitySecret = acc.IdentitySecret,
-            RevocationCode = acc.RevocationCode,
-            AccountName = acc.Username,
-            Session = new SessionData { SteamId = ulong.TryParse(acc.SteamId, out var id) ? id : 0 }
-        };
+        var model = ToExportModel(acc);
 
         try
         {

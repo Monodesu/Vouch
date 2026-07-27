@@ -44,6 +44,9 @@ public class SteamLoginService
                 IsPersistentSession = false,
                 PlatformType = EAuthTokenPlatformType.k_EAuthTokenPlatformType_MobileApp,
                 ClientOSType = EOSType.Android9,
+                // How this login shows up in Steam's "authorized devices" list (defaults to
+                // "<machine> (SteamKit2)"); brand it as Vouch instead.
+                DeviceFriendlyName = "Vouch",
                 Authenticator = new AuthenticatorAdapter(authenticator),
             });
 

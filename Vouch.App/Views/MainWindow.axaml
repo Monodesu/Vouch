@@ -288,6 +288,7 @@
                 <dialogs:EmailCodeDialog />
                 <dialogs:FinalizeDialog />
                 <dialogs:DeactivateDialog />
+                <dialogs:InventoryDialog />
                 <dialogs:GroupPickerDialog />
 
                 <!-- batch remove confirm -->

@@ -64,7 +64,9 @@
                 <!-- ALL mode: pick games, send everything -->
                 <StackPanel Spacing="6" IsVisible="{Binding !TransferSelectMode}">
                     <TextBlock Classes="dlgLabel" Text="{loc:T Transfer_Games}" />
-                    <ItemsControl ItemsSource="{Binding TransferGames}">
+                    <TextBlock Text="{loc:T Transfer_Loading}" IsVisible="{Binding TransferGamesLoading}"
+                               Foreground="{DynamicResource TextLo}" FontSize="12" Margin="0,2" />
+                    <ItemsControl ItemsSource="{Binding TransferGames}" IsVisible="{Binding !TransferGamesLoading}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="vm:TransferGame">
                                 <CheckBox IsChecked="{Binding IsSelected}" Content="{Binding Name}"
@@ -84,6 +86,8 @@
 
                 <!-- SELECT mode: load a game's inventory, tick items -->
                 <StackPanel Spacing="8" IsVisible="{Binding TransferSelectMode}">
+                    <TextBlock Text="{loc:T Transfer_Loading}" IsVisible="{Binding TransferGamesLoading}"
+                               Foreground="{DynamicResource TextLo}" FontSize="12" />
                     <CheckBox IsChecked="{Binding UseCustomAppId}" Content="{loc:T Transfer_Custom}"
                               Foreground="{DynamicResource TextHi}" />
                     <Grid ColumnDefinitions="*,8,Auto">

@@ -25,29 +25,16 @@ public record PendingLoginSession(
 
     /// <summary>A short label for the list. <see cref="DeviceName"/> is a browser User-Agent for web
     /// logins (long and ugly), so condense it to "Browser · OS"; real device names pass through.</summary>
-    public string FriendlyDevice
-    {
-        get
-        {
-            var ua = DeviceName;
-            if (string.IsNullOrWhiteSpace(ua)) return "Unknown device";
-            if (!ua.StartsWith("Mozilla/", StringComparison.OrdinalIgnoreCase)) return ua;
+    public string FriendlyDevice => SteamLoginApprovalService.FriendlyDeviceName(DeviceName);
+}
 
-            string browser =
-                ua.Contains("Edg/") ? "Edge" :
-                ua.Contains("OPR/") || ua.Contains("Opera") ? "Opera" :
-                ua.Contains("Chrome/") ? "Chrome" :
-                ua.Contains("Firefox/") ? "Firefox" :
-                ua.Contains("Safari/") ? "Safari" : "Browser";
-            string os =
-                ua.Contains("Windows NT") ? "Windows" :
-                ua.Contains("Mac OS X") || ua.Contains("Macintosh") ? "macOS" :
-                ua.Contains("Android") ? "Android" :
-                ua.Contains("iPhone") || ua.Contains("iPad") ? "iOS" :
-                ua.Contains("Linux") ? "Linux" : "";
-            return os.Length > 0 ? $"{browser} · {os}" : browser;
-        }
-    }
+/// <summary>An active login session for the account (one per signed-in device), from EnumerateTokens.
+/// <paramref name="Description"/> is the device name Steam recorded — a real device name, or a browser
+/// User-Agent for web logins.</summary>
+public record ActiveSession(ulong TokenId, string Description)
+{
+    /// <summary>A short label: browser User-Agents condense to "Browser · OS"; device names pass through.</summary>
+    public string FriendlyName => SteamLoginApprovalService.FriendlyDeviceName(Description);
 }
 
 /// <summary>
@@ -166,8 +153,62 @@ public class SteamLoginApprovalService
         return hmac.ComputeHash(data);
     }
 
-    // Web API verbs (verified against Steam): GetAuthSessionsForAccount is GET; GetAuthSessionInfo and
-    // UpdateAuthSessionWithMobileConfirmation are POST. Steam returns 405 if the wrong verb is used.
+    // ---- active sessions ("logged-in devices") — enumerate + revoke ----
+
+    /// <summary>Lists the account's active login sessions (one per signed-in device). Requires a
+    /// <em>fresh</em> access token — an expired one returns HTTP 401 (empty list here), so renew first.</summary>
+    public async Task<IReadOnlyList<ActiveSession>> EnumerateSessionsAsync(string accessToken, CancellationToken ct = default)
+    {
+        // CAuthentication_RefreshToken_Enumerate_Request { bool include_revoked = 1 } — omit → false → empty body.
+        var (body, eresult) = await PostAsync("EnumerateTokens", accessToken, Array.Empty<byte>(), ct);
+        return eresult != 1 ? Array.Empty<ActiveSession>() : ParseSessions(body);
+    }
+
+    // CAuthentication_RefreshToken_Enumerate_Response { repeated RefreshTokenDescription refresh_tokens = 1 },
+    // each { fixed64 token_id = 1; string token_description = 2; … }.
+    internal static List<ActiveSession> ParseSessions(byte[] body)
+    {
+        var list = new List<ActiveSession>();
+        foreach (var (field, wire, _, bytes) in ReadFields(body))
+        {
+            if (field != 1 || wire != 2 || bytes is null) continue;
+            ulong tid = 0; string desc = "";
+            foreach (var (f, w, v, b) in ReadFields(bytes))
+            {
+                if (f == 1 && w == 1) tid = v;               // token_id (fixed64)
+                else if (f == 2 && w == 2) desc = Str(b);    // token_description
+            }
+            if (tid != 0) list.Add(new ActiveSession(tid, desc));
+        }
+        return list;
+    }
+
+    /// <summary>Condenses a session/device name for display: browser User-Agents become "Browser · OS";
+    /// real device names pass through unchanged.</summary>
+    public static string FriendlyDeviceName(string? name)
+    {
+        var ua = name ?? "";
+        if (string.IsNullOrWhiteSpace(ua)) return "Unknown device";
+        if (!ua.StartsWith("Mozilla/", StringComparison.OrdinalIgnoreCase)) return ua;
+
+        string browser =
+            ua.Contains("Edg/") ? "Edge" :
+            ua.Contains("OPR/") || ua.Contains("Opera") ? "Opera" :
+            ua.Contains("Chrome/") ? "Chrome" :
+            ua.Contains("Firefox/") ? "Firefox" :
+            ua.Contains("Safari/") ? "Safari" : "Browser";
+        string os =
+            ua.Contains("Windows NT") ? "Windows" :
+            ua.Contains("Mac OS X") || ua.Contains("Macintosh") ? "macOS" :
+            ua.Contains("Android") ? "Android" :
+            ua.Contains("iPhone") || ua.Contains("iPad") ? "iOS" :
+            ua.Contains("Linux") ? "Linux" : "";
+        return os.Length > 0 ? $"{browser} · {os}" : browser;
+    }
+
+    // Web API verbs (verified against Steam): GetAuthSessionsForAccount is GET; GetAuthSessionInfo,
+    // UpdateAuthSessionWithMobileConfirmation, EnumerateTokens and RevokeRefreshToken are POST. Steam
+    // returns 405 if the wrong verb is used.
 
     private static async Task<(byte[] Body, int EResult)> GetAsync(
         string method, string accessToken, byte[] request, CancellationToken ct)

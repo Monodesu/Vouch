@@ -24,6 +24,20 @@
             <Setter Property="Padding" Value="8,6,10,4" />
             <Setter Property="Cursor" Value="Hand" />
         </Style>
+
+        <!-- session indicator stripe: green = signed in, yellow = expired, red = never signed in -->
+        <Style Selector="Border.sessbar">
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+        <Style Selector="Border.sessbar.active">
+            <Setter Property="Background" Value="{DynamicResource Good}" />
+        </Style>
+        <Style Selector="Border.sessbar.expired">
+            <Setter Property="Background" Value="{DynamicResource WarnText}" />
+        </Style>
+        <Style Selector="Border.sessbar.none">
+            <Setter Property="Background" Value="{DynamicResource Bad}" />
+        </Style>
         <Style Selector="Button.grouphdr:pointerover /template/ ContentPresenter">
             <Setter Property="Background" Value="Transparent" />
         </Style>
@@ -103,9 +117,14 @@
 
                     <!-- account row -->
                     <DataTemplate DataType="vm:AccountViewModel">
-                        <Grid ColumnDefinitions="Auto,*,Auto" Classes="accountRow"
+                        <Grid ColumnDefinitions="Auto,Auto,*,Auto" Classes="accountRow"
                               Classes.dragging="{Binding IsDragging}">
-                            <Panel Grid.Column="0" Width="38" Height="38">
+                            <Border Grid.Column="0" Classes="sessbar" Width="3" Height="26" CornerRadius="2"
+                                    VerticalAlignment="Center" Margin="0,0,9,0" IsVisible="{Binding IsReal}"
+                                    Classes.active="{Binding SessionOk}"
+                                    Classes.expired="{Binding SessionWarn}"
+                                    Classes.none="{Binding SessionOut}" />
+                            <Panel Grid.Column="1" Width="38" Height="38">
                                 <Border CornerRadius="19" Background="{Binding AvatarBrush}"
                                         IsVisible="{Binding !HasAvatar}">
                                     <TextBlock Text="{Binding Initials}" Foreground="{DynamicResource OnAccent}"
@@ -118,13 +137,13 @@
                                     </Ellipse.Fill>
                                 </Ellipse>
                             </Panel>
-                            <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
+                            <StackPanel Grid.Column="2" Margin="12,0,0,0" VerticalAlignment="Center">
                                 <TextBlock Text="{Binding PersonaName}" Foreground="{DynamicResource TextHi}"
                                            FontSize="13.5" FontWeight="Medium" />
                                 <TextBlock Text="{Binding Username}" Foreground="{DynamicResource TextLo}"
                                            FontSize="11" />
                             </StackPanel>
-                            <Border Grid.Column="2" VerticalAlignment="Center"
+                            <Border Grid.Column="3" VerticalAlignment="Center"
                                     IsVisible="{Binding HasPending}"
                                     Background="{DynamicResource Accent}" CornerRadius="10"
                                     MinWidth="20" Height="20" Padding="6,0">

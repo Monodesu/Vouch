@@ -176,8 +176,8 @@ public partial class SidebarView : UserControl
     {
         if (_dragging)
         {
-            var (dropBefore, _) = DropTarget(e.GetPosition(AccountList).Y);
-            Vm?.MoveAccounts(_dragSet, dropBefore);
+            var (group, dropBefore, _) = DropTarget(e.GetPosition(AccountList).Y);
+            Vm?.MoveAccountsToGroupAt(_dragSet, group, dropBefore);
             e.Pointer.Capture(null);
             EndDragVisuals();
             _dragSet = new();
@@ -199,31 +199,48 @@ public partial class SidebarView : UserControl
 
     private void ShowDropLine(double posY)
     {
-        var (_, y) = DropTarget(posY);
+        var (_, _, y) = DropTarget(posY);
         DropLine.Width = Math.Max(0, AccountList.Bounds.Width - 20);
         Canvas.SetLeft(DropLine, 10);
         Canvas.SetTop(DropLine, y - 1);
         DropLine.IsVisible = true;
     }
 
-    /// <summary>The account a drop at <paramref name="posY"/> would land before (null = end) and the
-    /// boundary's Y in list coordinates (for the indicator line).</summary>
-    private (AccountViewModel?, double) DropTarget(double posY)
+    /// <summary>Resolves a drop at <paramref name="posY"/> to a target group (which section the cursor is
+    /// in — so a drag lands in the group under the cursor, not the source group), the account to land
+    /// before within that group (null = append to the group), and the indicator line's Y.</summary>
+    private (string Group, AccountViewModel? Before, double Y) DropTarget(double posY)
     {
-        var items = AccountList.GetVisualDescendants().OfType<ListBoxItem>().ToList();
-        foreach (var it in items)
+        var items = AccountList.GetVisualDescendants().OfType<ListBoxItem>()
+            .Select(it => (Data: it.DataContext,
+                           Top: it.TranslatePoint(new Point(0, 0), AccountList)?.Y ?? 0,
+                           Height: it.Bounds.Height))
+            .OrderBy(x => x.Top)
+            .ToList();
+
+        // Target group = the last group header at or above the cursor (default "" if above the first).
+        string group = "";
+        foreach (var x in items)
+            if (x.Data is GroupHeader gh && x.Top <= posY) group = gh.Key;
+
+        // Within that group, drop before the first account whose midpoint is past the cursor; else append.
+        AccountViewModel? before = null;
+        double lineY = 0;
+        bool haveLine = false;
+        foreach (var x in items)
         {
-            double top = it.TranslatePoint(new Point(0, 0), AccountList)?.Y ?? 0;
-            if (posY < top + it.Bounds.Height / 2)
-                return (it.DataContext as AccountViewModel, top);
+            if (x.Data is AccountViewModel a && (a.Group ?? "") == group)
+            {
+                if (posY < x.Top + x.Height / 2) { before = a; lineY = x.Top; haveLine = true; break; }
+                lineY = x.Top + x.Height; // trailing edge of the last account in the group
+                haveLine = true;
+            }
+            else if (x.Data is GroupHeader gh && gh.Key == group && !haveLine)
+            {
+                lineY = x.Top + x.Height; // empty/collapsed group: line just under its header
+            }
         }
-        if (items.Count > 0)
-        {
-            var last = items[^1];
-            double top = last.TranslatePoint(new Point(0, 0), AccountList)?.Y ?? 0;
-            return (null, top + last.Bounds.Height);
-        }
-        return (null, 0);
+        return (group, before, lineY);
     }
 
     private static AccountViewModel? ItemAt(Visual? v) =>
