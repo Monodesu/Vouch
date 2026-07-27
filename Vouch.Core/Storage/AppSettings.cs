@@ -17,6 +17,7 @@ public class AppSettings
     public string TradeUrl { get; set; } = ""; // target trade link for inventory transfer
     public bool NotifyOnNew { get; set; } = true; // system notification on new confirmation/offer
     public bool Encrypted { get; set; } // whether the maFiles directory is encrypted at rest
+    public bool WarnIfUnencrypted { get; set; } = true; // show the top banner when maFiles aren't encrypted
 
     // Account order + groups used to live here; they moved to maFiles/entries.json so the layout
     // travels with the accounts. See MaFileIndex; MainViewModel migrates any legacy fields once.

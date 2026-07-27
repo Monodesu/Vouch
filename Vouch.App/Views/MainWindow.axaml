@@ -220,7 +220,7 @@
         </Style>
     </Window.Styles>
 
-    <Grid RowDefinitions="36,*" Background="{DynamicResource Bg0}"
+    <Grid RowDefinitions="36,Auto,*" Background="{DynamicResource Bg0}"
           Margin="{Binding $parent[Window].OffScreenMargin}">
 
         <!-- ===== custom title bar: one continuous draggable strip ===== -->
@@ -245,7 +245,17 @@
             </StackPanel>
         </Grid>
 
-        <Grid Grid.Row="1" ColumnDefinitions="272,*">
+        <!-- top banner: maFiles are not encrypted at rest (always shown; toggle it off in Settings) -->
+        <Border Grid.Row="1" IsVisible="{Binding ShowUnencryptedWarning}"
+                Background="{DynamicResource WarnBg}" Padding="16,8">
+            <Grid ColumnDefinitions="Auto,*">
+                <TextBlock Grid.Column="0" Text="⚠" Foreground="{DynamicResource WarnText}" FontSize="13" VerticalAlignment="Center" />
+                <TextBlock Grid.Column="1" Text="{loc:T Warn_Unencrypted}" Foreground="{DynamicResource WarnText}"
+                           FontSize="12.5" VerticalAlignment="Center" Margin="8,0,0,0" TextWrapping="Wrap" />
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="2" ColumnDefinitions="272,*">
 
         <views:SidebarView Grid.Column="0" />
 
@@ -270,8 +280,8 @@
         <views:AccountDetailView Grid.Column="1" IsVisible="{Binding HasSelection}" />
         </Grid>
 
-        <!-- dialog overlay: each dialog toggles itself via its ShowX binding -->
-        <Border Grid.Row="0" Grid.RowSpan="2" Classes="scrim" Classes.open="{Binding AnyDialogOpen}"
+        <!-- dialog overlay: spans the whole window (title bar + banner + content) -->
+        <Border Grid.Row="0" Grid.RowSpan="3" Classes="scrim" Classes.open="{Binding AnyDialogOpen}"
                 IsVisible="{Binding AnyDialogOpen}" Background="{DynamicResource Scrim}">
             <Panel Classes="dialogHost" Classes.open="{Binding AnyDialogOpen}">
                 <dialogs:SettingsDialog />
@@ -290,6 +300,7 @@
                 <dialogs:DeactivateDialog />
                 <dialogs:InventoryDialog />
                 <dialogs:GroupPickerDialog />
+                <dialogs:EncryptLooseDialog />
 
                 <!-- batch remove confirm -->
                 <Border Classes="dialog" Width="440" IsVisible="{Binding ShowBatchRemove}"
@@ -315,7 +326,7 @@
         </Border>
 
         <!-- unlock overlay: sits above everything and can't be dismissed without the passkey -->
-        <Border Grid.Row="0" Grid.RowSpan="2" Classes="scrim" Classes.open="{Binding ShowUnlock}"
+        <Border Grid.Row="0" Grid.RowSpan="3" Classes="scrim" Classes.open="{Binding ShowUnlock}"
                 IsVisible="{Binding ShowUnlock}" Background="{DynamicResource Scrim}">
             <Border Classes="dialog" Width="400"
                     MaxHeight="{Binding $parent[Panel].Bounds.Height, Converter={StaticResource Subtract}, ConverterParameter=72}">
@@ -341,7 +352,7 @@
         </Border>
 
         <!-- first-run language chooser: above everything, shown once before setup -->
-        <Border Grid.Row="0" Grid.RowSpan="2" Classes="scrim" Classes.open="{Binding ShowLanguagePicker}"
+        <Border Grid.Row="0" Grid.RowSpan="3" Classes="scrim" Classes.open="{Binding ShowLanguagePicker}"
                 IsVisible="{Binding ShowLanguagePicker}" Background="{DynamicResource Scrim}">
             <Border Classes="dialog" Width="300" VerticalAlignment="Center" HorizontalAlignment="Center">
                 <StackPanel Spacing="10">
@@ -365,7 +376,7 @@
 
         <!-- toast: transient success/error feedback, above everything; auto-hides after a few seconds.
              Classes.show drives a fade + slide via the Border.toast styles so it eases in and out. -->
-        <Border Grid.Row="0" Grid.RowSpan="2" Classes="toast" Classes.show="{Binding ToastVisible}"
+        <Border Grid.Row="0" Grid.RowSpan="3" Classes="toast" Classes.show="{Binding ToastVisible}"
                 IsHitTestVisible="{Binding ToastVisible}"
                 PointerEntered="Toast_PointerEntered" PointerExited="Toast_PointerExited"
                 HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,24,24"

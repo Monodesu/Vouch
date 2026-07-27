@@ -52,7 +52,17 @@ public partial class MainViewModel
     [ObservableProperty] private string _tradeUrl = "";
     [ObservableProperty] private bool _notifyOnNew = true; // system notification on new confirmation/offer
     [ObservableProperty] private bool _startOnBoot;        // launch on Windows sign-in (Startup shortcut)
+    [ObservableProperty] private bool _warnIfUnencrypted = true; // top banner when maFiles aren't encrypted
     public bool AutostartSupported => Platform.Autostart.IsSupported;
+
+    /// <summary>Drives the top "maFiles aren't encrypted" banner: shown when encryption is off, the user
+    /// hasn't disabled the warning, and there are accounts at risk.</summary>
+    public bool ShowUnencryptedWarning => !EncryptionEnabled && WarnIfUnencrypted && Accounts.Count > 0;
+
+    /// <summary>Raise after any input to the banner state changes.</summary>
+    internal void RefreshUnencryptedWarning() => OnPropertyChanged(nameof(ShowUnencryptedWarning));
+
+    partial void OnWarnIfUnencryptedChanged(bool value) { SaveSettings(); RefreshUnencryptedWarning(); }
 
     [RelayCommand]
     private void OpenSettings() { CloseDialogs(); ShowSettings = true; }
@@ -93,6 +103,7 @@ public partial class MainViewModel
         ApiKey = s.ApiKey;
         TradeUrl = s.TradeUrl;
         NotifyOnNew = s.NotifyOnNew;
+        WarnIfUnencrypted = s.WarnIfUnencrypted;
         StartOnBoot = Platform.Autostart.IsEnabled(); // reflect the real Startup-folder state
         _loadingSettings = false;
         RestartConfirmTimer();
@@ -117,6 +128,7 @@ public partial class MainViewModel
             ApiKey = ApiKey,
             TradeUrl = TradeUrl,
             NotifyOnNew = NotifyOnNew,
+            WarnIfUnencrypted = WarnIfUnencrypted,
             Encrypted = EncryptionEnabled, // keep the repo's at-rest flag intact on a full save
         }.SaveTo(AppPaths.SettingsPath);
     }
@@ -160,8 +172,8 @@ public partial class MainViewModel
     {
         // Stay quiet while locked, busy, inside a dialog, or mid batch sign-in.
         if (ShowUnlock || AnyDialogOpen || ConfirmationsBusy || BatchSignInActive) return;
-        if (SelectedAccount is { IsReal: true, HasSession: true } acc)
-            _ = FetchConfirmationsAsync(acc);
+        if (SelectedAccount is { IsReal: true, HasSession: true })
+            _ = RefreshAllTabsAsync(forceRevalidate: false); // all four tabs; refresh-token check is throttled
     }
 
     // ---- clear-clipboard-after-copy ----

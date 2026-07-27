@@ -1,6 +1,6 @@
 # Vouch
 
-**English** · [中文](README.zh-CN.md) · [Русский](README.ru.md) · [日本語](README.ja.md)
+**English** · [中文](docs/README.zh-CN.md) · [Русский](docs/README.ru.md) · [日本語](docs/README.ja.md)
 
 A modern, cross-platform **Steam authenticator** for the desktop — a from-scratch
 reimplementation of the unmaintained
@@ -15,6 +15,15 @@ authenticators — all from one app.
 - **Stack:** Avalonia 12 (Fluent) · .NET 10 · CommunityToolkit.Mvvm · SteamKit2 for login + direct HTTP to Steam
 - **Platforms:** Windows (primary), Linux, macOS
 - **Languages:** English · 简体中文 · Русский · 日本語 (live switch)
+
+## Screenshots
+
+<p align="center">
+  <img src="docs/screenshot/s1.png" width="46%">
+  <img src="docs/screenshot/s2.png" width="46%">
+  <img src="docs/screenshot/s3.png" width="46%">
+  <img src="docs/screenshot/s4.png" width="46%">
+</p>
 
 ---
 

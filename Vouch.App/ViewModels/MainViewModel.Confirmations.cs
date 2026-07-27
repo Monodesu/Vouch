@@ -122,6 +122,23 @@ public partial class MainViewModel
             await FetchConfirmationsAsync(acc);
     }
 
+    /// <summary>Refreshes all four detail tabs for the selected account after a single authoritative
+    /// session re-check (so the refresh token is validated once, not per tab). Used on select, on the
+    /// periodic timer, and by the Refresh button.</summary>
+    public async Task RefreshAllTabsAsync(bool forceRevalidate)
+    {
+        if (SelectedAccount is not { IsReal: true } acc) return;
+        await RevalidateSessionAsync(acc, force: forceRevalidate);
+        if (!ReferenceEquals(SelectedAccount, acc)) return; // moved on
+        _ = RefreshConfirmations();
+        _ = RefreshOffers();
+        _ = RefreshNotifications();
+        _ = RefreshDevices();
+    }
+
+    [RelayCommand]
+    private Task RefreshAllTabs() => RefreshAllTabsAsync(forceRevalidate: true);
+
     private bool _sweeping;
 
     /// <summary>

@@ -40,7 +40,33 @@ public partial class MainViewModel
         ApplyGroupsToAccounts();
         SelectedAccount = Accounts.Count > 0 ? Accounts[0] : null;
         RestartConfirmTimer(); // accounts are loaded now — start/refresh the checks + populate badges
+
+        // An encrypted vault shouldn't hold plaintext maFiles (dropped in by hand, or left by an
+        // interrupted encryption). If any are found, offer to encrypt them.
+        var loose = _repo.FindPlaintextMaFiles();
+        if (loose.Count > 0)
+        {
+            LooseFileCount = loose.Count;
+            ShowEncryptLoose = true;
+        }
     }
+
+    // ---- "some maFiles are still unencrypted" prompt (shown after unlock) ----
+    [ObservableProperty] private int _looseFileCount;
+
+    public string EncryptLooseMessage => Loc.T("EncLoose_Message", LooseFileCount);
+    partial void OnLooseFileCountChanged(int value) => OnPropertyChanged(nameof(EncryptLooseMessage));
+
+    [RelayCommand]
+    private void ConfirmEncryptLoose()
+    {
+        var n = _repo.EncryptLooseFiles();
+        ShowEncryptLoose = false;
+        if (n > 0) ShowToast(Loc.T("EncLoose_Toast"), ToastKind.Success);
+    }
+
+    [RelayCommand]
+    private void DismissEncryptLoose() => ShowEncryptLoose = false;
 
     // ---- set-passkey dialog (opened by turning the settings toggle on) ----
     [ObservableProperty] private string _setPasskey = "";
@@ -57,6 +83,7 @@ public partial class MainViewModel
 
     partial void OnEncryptionEnabledChanged(bool value)
     {
+        RefreshUnencryptedWarning(); // encryption state drives the top banner
         if (_syncingEncryptionToggle || value == _repo.IsEncrypted) return;
 
         if (value)
@@ -99,6 +126,7 @@ public partial class MainViewModel
             SetPasskey = SetPasskeyConfirm = "";
             SyncEncryptionToggle();
             OpenSettings(); // back to where the toggle lives
+            ShowToast(Loc.T("Enc_ToastEnabled"), ToastKind.Success);
         }
         catch (Exception ex)
         {

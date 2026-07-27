@@ -23,11 +23,37 @@ public class MaFileRepository
         MaFilesDir = maFilesDir;
         _settingsPath = settingsPath ?? AppPaths.SettingsPath;
         Directory.CreateDirectory(maFilesDir);
+        ReconcileEncryptionState();
+    }
+
+    /// <summary>Self-heals the encryption flag against what's actually on disk. The flag lives in
+    /// app settings, separate from the maFiles; if settings.json is lost or reset while the directory
+    /// holds encrypted maFiles, the flag would read <c>false</c> and the app would try to parse
+    /// ciphertext as plaintext JSON — silently failing with no chance to enter the passkey. So when the
+    /// flag says "plaintext" but a real v2 envelope is found on disk, flip it back on. Only ever corrects
+    /// <c>false → true</c>, and only with hard evidence, so it can never wrongly hide plaintext accounts.</summary>
+    private void ReconcileEncryptionState()
+    {
+        if (IsEncrypted) return; // already flagged encrypted — nothing to correct
+
+        foreach (var file in Directory.EnumerateFiles(MaFilesDir, "*.maFile"))
+        {
+            string text;
+            try { text = File.ReadAllText(file); }
+            catch { continue; }
+            if (FileEncryptorV2.LooksLikeV2(text))
+            {
+                SetEncrypted(true);
+                return;
+            }
+        }
     }
 
     private string EntriesPath => Path.Combine(MaFilesDir, "entries.json");
 
-    /// <summary>Whether the directory is encrypted at rest (stored in app settings).</summary>
+    /// <summary>Whether the directory is encrypted at rest. Stored in app settings, but reconciled
+    /// against the actual files at construction (see <see cref="ReconcileEncryptionState"/>) so a lost
+    /// or reset settings.json can't leave encrypted maFiles undetected.</summary>
     public bool IsEncrypted => AppSettings.LoadFrom(_settingsPath).Encrypted;
 
     private void SetEncrypted(bool value)
@@ -175,6 +201,46 @@ public class MaFileRepository
         var index = ReadIndex();
         index.Accounts.RemoveAll(e => e.SteamId == steamId);
         WriteIndex(index);
+    }
+
+    /// <summary>In an encrypted, unlocked directory, lists any <c>*.maFile</c> that is still plaintext
+    /// (e.g. dropped into the folder by hand, or left behind by an interrupted encryption). These hold a
+    /// full account in the clear despite the vault being "encrypted", so the app offers to fix them.
+    /// Empty when the directory isn't encrypted, is still locked, or every file is already a v2 envelope.</summary>
+    public IReadOnlyList<string> FindPlaintextMaFiles()
+    {
+        if (!IsEncrypted || _passkey is null) return Array.Empty<string>();
+
+        var loose = new List<string>();
+        foreach (var file in Directory.EnumerateFiles(MaFilesDir, "*.maFile"))
+        {
+            // LoadFile with no password: plaintext → Ok; a v2 envelope → NeedsPassword; junk → Invalid.
+            if (MaFileStore.LoadFile(file).Status == MaFileLoadStatus.Ok)
+                loose.Add(Path.GetFileName(file));
+        }
+        return loose;
+    }
+
+    /// <summary>Re-encrypts any plaintext maFiles in an encrypted, unlocked directory (see
+    /// <see cref="FindPlaintextMaFiles"/>). Each is rewritten as a v2 envelope under the canonical
+    /// <c>{steamid}.maFile</c> name; a differently-named source file is removed after conversion so no
+    /// plaintext copy lingers. Returns how many were converted.</summary>
+    public int EncryptLooseFiles()
+    {
+        if (!IsEncrypted || _passkey is null) return 0;
+
+        var n = 0;
+        foreach (var file in Directory.EnumerateFiles(MaFilesDir, "*.maFile").ToList())
+        {
+            if (MaFileStore.LoadFile(file) is not { Status: MaFileLoadStatus.Ok, Account: { } acc }) continue;
+
+            Save(acc); // rewrites {steamid}.maFile as a v2 envelope + updates the index entry
+            var canonical = Path.Combine(MaFilesDir, $"{acc.Session?.SteamId ?? 0}.maFile");
+            if (!string.Equals(Path.GetFullPath(file), Path.GetFullPath(canonical), StringComparison.OrdinalIgnoreCase))
+                try { File.Delete(file); } catch { /* best-effort: the canonical encrypted copy already exists */ }
+            n++;
+        }
+        return n;
     }
 
     /// <summary>Encrypts the whole directory with <paramref name="passkey"/> and keeps it for the session.</summary>

@@ -1,0 +1,24 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Vouch.App.ViewModels"
+             xmlns:loc="using:Vouch.App.Localization"
+             x:Class="Vouch.App.Views.Dialogs.EncryptLooseDialog"
+             x:DataType="vm:MainViewModel">
+
+    <Border Classes="dialog" Width="440" IsVisible="{Binding ShowEncryptLoose}">
+        <StackPanel Spacing="14">
+            <TextBlock Classes="dlgTitle" Text="{loc:T EncLoose_Title}" />
+
+            <StackPanel Orientation="Horizontal" Spacing="10">
+                <TextBlock Text="⚠" Foreground="{DynamicResource WarnText}" FontSize="18" VerticalAlignment="Top" />
+                <TextBlock Text="{Binding EncryptLooseMessage}" Foreground="{DynamicResource TextHi}"
+                           FontSize="13" TextWrapping="Wrap" MaxWidth="360" />
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+                <Button Classes="ghost" Content="{loc:T EncLoose_Later}" Command="{Binding DismissEncryptLooseCommand}" />
+                <Button Classes="primary" Content="{loc:T EncLoose_Encrypt}" Command="{Binding ConfirmEncryptLooseCommand}" />
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</UserControl>

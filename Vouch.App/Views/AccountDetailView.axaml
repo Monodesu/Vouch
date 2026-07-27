@@ -530,60 +530,19 @@
                     </Button>
                 </StackPanel>
 
+                <!-- one Refresh button reloads all four tabs (single session re-check) -->
                 <Button Grid.Column="1" Classes="pill" Padding="10,5" ToolTip.Tip="{loc:T Confirm_RefreshTip}"
                         Background="{DynamicResource Card}" Foreground="{DynamicResource TextHi}"
-                        IsVisible="{Binding IsConfTab}" Command="{Binding RefreshConfirmationsCommand}">
+                        Command="{Binding RefreshAllTabsCommand}">
                     <StackPanel Orientation="Horizontal" Spacing="7">
                         <Viewbox Width="16" Height="16">
                             <Canvas Width="24" Height="24">
                                 <Path Data="{StaticResource Ico_Refresh}" Fill="{DynamicResource TextHi}" />
                             </Canvas>
                         </Viewbox>
-                        <TextBlock Text="{loc:T Confirm_Refresh}" FontSize="12" IsVisible="{Binding !ConfirmationsBusy}" />
+                        <TextBlock Text="{loc:T Confirm_Refresh}" FontSize="12" IsVisible="{Binding !AnyTabBusy}" />
                         <TextBlock Text="{loc:T Confirm_LoadingShort}" FontSize="12" Foreground="{DynamicResource Accent}"
-                                   IsVisible="{Binding ConfirmationsBusy}" />
-                    </StackPanel>
-                </Button>
-                <Button Grid.Column="1" Classes="pill" Padding="10,5"
-                        Background="{DynamicResource Card}" Foreground="{DynamicResource TextHi}"
-                        IsVisible="{Binding IsOffersTab}" Command="{Binding RefreshOffersCommand}">
-                    <StackPanel Orientation="Horizontal" Spacing="7">
-                        <Viewbox Width="16" Height="16">
-                            <Canvas Width="24" Height="24">
-                                <Path Data="{StaticResource Ico_Refresh}" Fill="{DynamicResource TextHi}" />
-                            </Canvas>
-                        </Viewbox>
-                        <TextBlock Text="{loc:T Confirm_Refresh}" FontSize="12" IsVisible="{Binding !OffersBusy}" />
-                        <TextBlock Text="{loc:T Confirm_LoadingShort}" FontSize="12" Foreground="{DynamicResource Accent}"
-                                   IsVisible="{Binding OffersBusy}" />
-                    </StackPanel>
-                </Button>
-                <Button Grid.Column="1" Classes="pill" Padding="10,5"
-                        Background="{DynamicResource Card}" Foreground="{DynamicResource TextHi}"
-                        IsVisible="{Binding IsNotifTab}" Command="{Binding RefreshNotificationsCommand}">
-                    <StackPanel Orientation="Horizontal" Spacing="7">
-                        <Viewbox Width="16" Height="16">
-                            <Canvas Width="24" Height="24">
-                                <Path Data="{StaticResource Ico_Refresh}" Fill="{DynamicResource TextHi}" />
-                            </Canvas>
-                        </Viewbox>
-                        <TextBlock Text="{loc:T Confirm_Refresh}" FontSize="12" IsVisible="{Binding !NotificationsBusy}" />
-                        <TextBlock Text="{loc:T Confirm_LoadingShort}" FontSize="12" Foreground="{DynamicResource Accent}"
-                                   IsVisible="{Binding NotificationsBusy}" />
-                    </StackPanel>
-                </Button>
-                <Button Grid.Column="1" Classes="pill" Padding="10,5"
-                        Background="{DynamicResource Card}" Foreground="{DynamicResource TextHi}"
-                        IsVisible="{Binding IsDevicesTab}" Command="{Binding RefreshDevicesCommand}">
-                    <StackPanel Orientation="Horizontal" Spacing="7">
-                        <Viewbox Width="16" Height="16">
-                            <Canvas Width="24" Height="24">
-                                <Path Data="{StaticResource Ico_Refresh}" Fill="{DynamicResource TextHi}" />
-                            </Canvas>
-                        </Viewbox>
-                        <TextBlock Text="{loc:T Confirm_Refresh}" FontSize="12" IsVisible="{Binding !DevicesBusy}" />
-                        <TextBlock Text="{loc:T Confirm_LoadingShort}" FontSize="12" Foreground="{DynamicResource Accent}"
-                                   IsVisible="{Binding DevicesBusy}" />
+                                   IsVisible="{Binding AnyTabBusy}" />
                     </StackPanel>
                 </Button>
             </Grid>
@@ -748,10 +707,16 @@
 
                 <!-- DEVICES (read-only list; sign-out happens on the Steam website) -->
                 <Grid IsVisible="{Binding IsDevicesTab}" RowDefinitions="Auto,Auto,*">
-                    <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,10">
+                    <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto" Margin="0,0,0,10">
                         <TextBlock Grid.Column="0" Text="{loc:T Devices_ManageHint}" VerticalAlignment="Center"
-                                   Foreground="{DynamicResource TextLo}" FontSize="11.5" TextWrapping="Wrap" Margin="0,0,10,0" />
-                        <Button Grid.Column="1" Classes="pill" Padding="14,7" VerticalAlignment="Center"
+                                   Foreground="{DynamicResource TextLo}" FontSize="11.5" TextWrapping="Wrap" Margin="0,0,6,0" />
+                        <Border Grid.Column="1" Width="16" Height="16" CornerRadius="8" VerticalAlignment="Center" Margin="0,0,10,0"
+                                Background="{DynamicResource CardHi}" Cursor="Help"
+                                ToolTip.Tip="{loc:T Devices_SignOutTip}" ToolTip.Placement="Top">
+                            <TextBlock Text="?" Foreground="{DynamicResource TextLo}" FontSize="11" FontWeight="Bold"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <Button Grid.Column="2" Classes="pill" Padding="14,7" VerticalAlignment="Center"
                                 Background="{DynamicResource Accent}" Foreground="{DynamicResource OnAccent}"
                                 IsEnabled="{Binding !DevicesBusy}"
                                 Command="{Binding OpenDevicesInBrowserCommand}">

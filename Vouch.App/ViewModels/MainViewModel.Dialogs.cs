@@ -28,8 +28,9 @@ public partial class MainViewModel
     [ObservableProperty] private bool _showOfferDetails;
     [ObservableProperty] private bool _showDeactivate;
     [ObservableProperty] private bool _showInventory;
+    [ObservableProperty] private bool _showEncryptLoose;
 
-    public bool AnyDialogOpen => ShowSettings || ShowWizard || ShowImport || ShowExport || ShowLogin || ShowRemove || ShowSetPasskey || ShowBatchRemove || ShowTransfer || ShowOfferDetails || ShowDeactivate || ShowGroupPicker || ShowLoginDetail || ShowCs2Sync || ShowInventory;
+    public bool AnyDialogOpen => ShowSettings || ShowWizard || ShowImport || ShowExport || ShowLogin || ShowRemove || ShowSetPasskey || ShowBatchRemove || ShowTransfer || ShowOfferDetails || ShowDeactivate || ShowGroupPicker || ShowLoginDetail || ShowCs2Sync || ShowInventory || ShowEncryptLoose;
 
     partial void OnShowSettingsChanged(bool value) => OnPropertyChanged(nameof(AnyDialogOpen));
     partial void OnShowWizardChanged(bool value)
@@ -50,10 +51,11 @@ public partial class MainViewModel
     partial void OnShowLoginDetailChanged(bool value) => OnPropertyChanged(nameof(AnyDialogOpen));
     partial void OnShowCs2SyncChanged(bool value) => OnPropertyChanged(nameof(AnyDialogOpen));
     partial void OnShowInventoryChanged(bool value) => OnPropertyChanged(nameof(AnyDialogOpen));
+    partial void OnShowEncryptLooseChanged(bool value) => OnPropertyChanged(nameof(AnyDialogOpen));
 
     [RelayCommand]
     private void CloseDialogs()
     {
-        ShowSettings = ShowWizard = ShowImport = ShowExport = ShowLogin = ShowRemove = ShowSetPasskey = ShowBatchRemove = ShowTransfer = ShowOfferDetails = ShowDeactivate = ShowGroupPicker = ShowLoginDetail = ShowCs2Sync = ShowInventory = false;
+        ShowSettings = ShowWizard = ShowImport = ShowExport = ShowLogin = ShowRemove = ShowSetPasskey = ShowBatchRemove = ShowTransfer = ShowOfferDetails = ShowDeactivate = ShowGroupPicker = ShowLoginDetail = ShowCs2Sync = ShowInventory = ShowEncryptLoose = false;
     }
 }

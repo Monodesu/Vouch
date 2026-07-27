@@ -45,7 +45,7 @@ public partial class MainViewModel
 
     private void InitGroups()
     {
-        Accounts.CollectionChanged += (_, _) => RebuildSidebar();
+        Accounts.CollectionChanged += (_, _) => { RebuildSidebar(); RefreshUnencryptedWarning(); };
         RebuildSidebar();
     }
 

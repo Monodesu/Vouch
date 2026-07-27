@@ -1,6 +1,6 @@
 # Vouch
 
-[English](README.md) · **中文** · [Русский](README.ru.md) · [日本語](README.ja.md)
+[English](../README.md) · **中文** · [Русский](README.ru.md) · [日本語](README.ja.md)
 
 一款现代化的跨平台桌面 **Steam 身份验证器** —— 对已停止维护的
 [Steam Desktop Authenticator](https://github.com/Jessecar96/SteamDesktopAuthenticator)
@@ -13,6 +13,15 @@
 - **技术栈：** Avalonia 12 (Fluent) · .NET 10 · CommunityToolkit.Mvvm · 登录用 SteamKit2 + 其余纯 HTTP 直连 Steam
 - **平台：** Windows（主要）、Linux、macOS
 - **语言：** English · 简体中文 · Русский · 日本語（可实时切换）
+
+## 截图
+
+<p align="center">
+  <img src="screenshot/s1.png" width="46%">
+  <img src="screenshot/s2.png" width="46%">
+  <img src="screenshot/s3.png" width="46%">
+  <img src="screenshot/s4.png" width="46%">
+</p>
 
 ---
 

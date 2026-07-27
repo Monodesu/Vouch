@@ -49,7 +49,6 @@ public partial class MainViewModel
             if (SelectedAccount is not { HasSession: true }) DevicesStatus = Loc.T("Devices_SignIn");
             return;
         }
-        _ = RevalidateSessionAsync(acc, force: true); // manual refresh → authoritative session check
         DevicesBusy = true;
         DevicesStatus = Loc.T("Devices_Loading");
         try

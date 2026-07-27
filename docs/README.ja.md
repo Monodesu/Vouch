@@ -1,6 +1,6 @@
 # Vouch
 
-[English](README.md) · [中文](README.zh-CN.md) · [Русский](README.ru.md) · **日本語**
+[English](../README.md) · [中文](README.zh-CN.md) · [Русский](README.ru.md) · **日本語**
 
 デスクトップ向けのモダンでクロスプラットフォームな **Steam 認証アプリ** —
 メンテナンスが終了した
@@ -15,6 +15,15 @@
 - **技術スタック:** Avalonia 12 (Fluent) · .NET 10 · CommunityToolkit.Mvvm · ログインは SteamKit2 + その他は Steam への直接 HTTP 通信
 - **プラットフォーム:** Windows (メイン)、Linux、macOS
 - **言語:** English · 简体中文 · Русский · 日本語 (リアルタイム切り替え)
+
+## スクリーンショット
+
+<p align="center">
+  <img src="screenshot/s1.png" width="46%">
+  <img src="screenshot/s2.png" width="46%">
+  <img src="screenshot/s3.png" width="46%">
+  <img src="screenshot/s4.png" width="46%">
+</p>
 
 ---
 

@@ -52,7 +52,7 @@
                 </StackPanel>
             </Grid>
 
-            <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="6">
+            <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="6">
                 <TextBlock Grid.Row="0" Text="{loc:T Settings_MinimizeToTray}" Foreground="{DynamicResource TextHi}" VerticalAlignment="Center" />
                 <ToggleSwitch Grid.Row="0" Grid.Column="1" IsChecked="{Binding MinimizeToTray}" HorizontalAlignment="Right" />
 
@@ -72,6 +72,9 @@
 
                 <TextBlock Grid.Row="5" Text="{loc:T Settings_NotifyOnNew}" Foreground="{DynamicResource TextHi}" VerticalAlignment="Center" />
                 <ToggleSwitch Grid.Row="5" Grid.Column="1" IsChecked="{Binding NotifyOnNew}" HorizontalAlignment="Right" />
+
+                <TextBlock Grid.Row="6" Text="{loc:T Settings_WarnUnencrypted}" Foreground="{DynamicResource TextHi}" VerticalAlignment="Center" />
+                <ToggleSwitch Grid.Row="6" Grid.Column="1" IsChecked="{Binding WarnIfUnencrypted}" HorizontalAlignment="Right" />
             </Grid>
 
             <Grid ColumnDefinitions="*,12,*" IsVisible="{Binding PeriodicChecking}">

@@ -156,6 +156,13 @@ public partial class MainViewModel
     [ObservableProperty] private bool _notificationsBusy;
     [ObservableProperty] private string _notificationsStatus = "";
 
+    /// <summary>True while any of the four tabs is loading — drives the single Refresh button's spinner.</summary>
+    public bool AnyTabBusy => ConfirmationsBusy || OffersBusy || NotificationsBusy || DevicesBusy;
+    partial void OnOffersBusyChanged(bool value) => OnPropertyChanged(nameof(AnyTabBusy));
+    partial void OnNotificationsBusyChanged(bool value) => OnPropertyChanged(nameof(AnyTabBusy));
+    partial void OnConfirmationsBusyChanged(bool value) => OnPropertyChanged(nameof(AnyTabBusy));
+    partial void OnDevicesBusyChanged(bool value) => OnPropertyChanged(nameof(AnyTabBusy));
+
     private bool _offersLoaded, _notifLoaded;
 
     partial void OnDetailTabChanged(int value)
@@ -187,9 +194,10 @@ public partial class MainViewModel
         NotifyDevicesChanged();
         NotifyUnreadChanged();
         _offersLoaded = _notifLoaded = true;
-        DevicesLoaded = false; // reload on next Devices-tab open (they're not needed for a badge count)
+        DevicesLoaded = true; // load all four up front so every tab's badge is live
         _ = RefreshOffers();
         _ = RefreshNotifications();
+        _ = RefreshDevices();
     }
 
     private void EnsureTabLoaded()
@@ -227,7 +235,6 @@ public partial class MainViewModel
             if (SelectedAccount is not { HasSession: true }) OffersStatus = Loc.T("Offers_SignIn");
             return;
         }
-        _ = RevalidateSessionAsync(acc, force: true); // manual refresh → authoritative session check
         OffersBusy = true;
         OffersStatus = Loc.T("Offers_Loading");
         try
@@ -394,7 +401,6 @@ public partial class MainViewModel
             if (SelectedAccount is not { HasSession: true }) NotificationsStatus = Loc.T("Offers_SignIn");
             return;
         }
-        _ = RevalidateSessionAsync(acc, force: true); // manual refresh → authoritative session check
         NotificationsBusy = true;
         NotificationsStatus = Loc.T("Offers_Loading");
         try

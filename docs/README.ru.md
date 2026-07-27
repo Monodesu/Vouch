@@ -1,6 +1,6 @@
 # Vouch
 
-[English](README.md) · [中文](README.zh-CN.md) · **Русский** · [日本語](README.ja.md)
+[English](../README.md) · [中文](README.zh-CN.md) · **Русский** · [日本語](README.ja.md)
 
 Современный кроссплатформенный **аутентификатор Steam** для десктопа — написанная
 с нуля реализация заброшенного
@@ -16,6 +16,15 @@
 - **Стек:** Avalonia 12 (Fluent) · .NET 10 · CommunityToolkit.Mvvm · SteamKit2 для входа + прямой HTTP к Steam
 - **Платформы:** Windows (основная), Linux, macOS
 - **Языки:** English · 简体中文 · Русский · 日本語 (переключение на лету)
+
+## Скриншоты
+
+<p align="center">
+  <img src="screenshot/s1.png" width="46%">
+  <img src="screenshot/s2.png" width="46%">
+  <img src="screenshot/s3.png" width="46%">
+  <img src="screenshot/s4.png" width="46%">
+</p>
 
 ---
 
