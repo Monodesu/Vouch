@@ -18,6 +18,11 @@ public partial class MainWindow : Window
     /// <summary>Set by the tray "Exit" so OnClosing really closes instead of hiding.</summary>
     public bool AllowClose { get; set; }
 
+    /// <summary>OnOpened fires again every time the window is re-shown from the tray, so the
+    /// "start minimized" hide must only run on the very first open — otherwise every manual
+    /// re-show immediately hides again (an unbreakable loop).</summary>
+    private bool _firstOpenHandled;
+
     public MainWindow()
     {
         InitializeComponent();
@@ -139,6 +144,9 @@ public partial class MainWindow : Window
             RunScreenshotHarness();
             return;
         }
+
+        if (_firstOpenHandled) return; // re-shown from the tray — don't re-run startup behaviour
+        _firstOpenHandled = true;
 
         if (DataContext is MainViewModel vm)
         {
